@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Lead Generation - Devon Field Strategy</title>
+
+    <!-- Plotly.js for charts -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Leaflet.js for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg-dark: #1e293b;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-dark);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .nav h1 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: #fbbf24;
+        }
+
+        .nav-subtitle {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .nav-section {
+            margin-bottom: 20px;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .nav a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .nav a:hover {
+            background: #334155;
+            color: white;
+        }
+
+        .nav a.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main content */
+        .main {
+            margin-left: 280px;
+            padding: 30px 40px;
+            max-width: 1400px;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .stat-card.success .stat-value { color: var(--secondary); }
+        .stat-card.warning .stat-value { color: var(--warning); }
+        .stat-card.danger .stat-value { color: var(--danger); }
+
+        /* Charts */
+        .chart-container {
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+
+        /* Map */
+        .map-container {
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .data-table tr:hover {
+            background: #f1f5f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-primary { background: #dbeafe; color: var(--primary); }
+        .badge-success { background: #d1fae5; color: var(--secondary); }
+        .badge-warning { background: #fef3c7; color: var(--warning); }
+        .badge-danger { background: #fee2e2; color: var(--danger); }
+
+        /* Guide content */
+        .guide-content h1 { font-size: 1.75rem; margin: 30px 0 15px; color: var(--text-dark); }
+        .guide-content h2 { font-size: 1.4rem; margin: 25px 0 12px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+        .guide-content h3 { font-size: 1.1rem; margin: 20px 0 10px; color: var(--text-dark); }
+        .guide-content h4 { font-size: 1rem; margin: 15px 0 8px; color: var(--text-light); }
+        .guide-content p { margin-bottom: 12px; }
+        .guide-content ul, .guide-content ol { margin: 10px 0 15px 25px; }
+        .guide-content li { margin-bottom: 6px; }
+        .guide-content table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9rem; }
+        .guide-content th, .guide-content td { padding: 10px 12px; border: 1px solid var(--border); text-align: left; }
+        .guide-content th { background: var(--bg-light); }
+        .guide-content code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+        .guide-content blockquote { border-left: 4px solid var(--primary); padding-left: 15px; margin: 15px 0; color: var(--text-light); font-style: italic; }
+        .guide-content hr { border: none; border-top: 2px solid var(--border); margin: 30px 0; }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--primary);
+        }
+
+        .timeline-time {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .timeline-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .nav {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main {
+                margin-left: 0;
+            }
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <h1>Solar Lead Gen</h1>
+        <div class="nav-subtitle">Devon Field Strategy | Feb 2026</div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Dashboard</div>
+            <a href="#" onclick="showSection('overview')" class="active">Overview</a>
+            <a href="#" onclick="showSection('maps')">Target Maps</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Data Analysis</div>
+            <a href="#" onclick="showSection('consumption')">Electricity Consumption</a>
+            <a href="#" onclick="showSection('comparison')">Devon vs UK</a>
+            <a href="#" onclick="showSection('scoring')">Zone Scoring</a>
+            <a href="#" onclick="showSection('opportunity')">Opportunity Matrix</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Operations</div>
+            <a href="#" onclick="showSection('schedule')">Daily Schedule</a>
+            <a href="#" onclick="showSection('funnel')">Conversion Funnel</a>
+            <a href="#" onclick="showSection('kpis')">KPIs & Tracking</a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Reference</div>
+            <a href="#" onclick="showSection('guide')">Full Strategy Guide</a>
+            <a href="#" onclick="showSection('postcodes')">Postcode Data</a>
+            <a href="#" onclick="showSection('scripts')">Pitch Scripts</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+
+        <!-- Overview Section -->
+        <div id="overview" class="section active">
+            <h1 style="font-size: 1.75rem; margin-bottom: 10px;">Field Strategy Dashboard</h1>
+            <p style="color: var(--text-light); margin-bottom: 30px;">Okehampton, Devon (EX20) | Tuesday-Thursday Campaign | 4-Person Team</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">4,200</div>
+                    <div class="stat-label">Mean kWh/year in EX20 (vs 3,449 UK avg)</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">71%</div>
+                    <div class="stat-label">Owner-occupation in West Devon</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value">11%</div>
+                    <div class="stat-label">Off-gas-grid (vs 8.6% UK)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">10%</div>
+                    <div class="stat-label">Devon homes with solar (vs 4.6% UK)</div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="card">
+                    <div class="card-title">Top Priority Zones</div>
+                    <div class="card-subtitle">Postcode sectors ranked by composite opportunity score</div>
+                    <div id="priority-zones-chart" class="chart-container"></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Campaign Targets</div>
+                    <div class="card-subtitle">Expected outcomes for 2-day campaign</div>
+                    <div id="targets-gauge" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Key Success Factors</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Factor</th>
+                            <th>Devon Value</th>
+                            <th>UK Average</th>
+                            <th>Advantage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mean electricity consumption</td>
+                            <td>4,200 kWh/year</td>
+                            <td>3,449 kWh/year</td>
+                            <td><span class="badge badge-success">+22%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Owner-occupation rate</td>
+                            <td>71%</td>
+                            <td>65%</td>
+                            <td><span class="badge badge-success">+6pp</span></td>
+                        </tr>
+                        <tr>
+                            <td>Off-gas-grid homes</td>
+                            <td>11%</td>
+                            <td>8.6%</td>
+                            <td><span class="badge badge-success">+28%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Solar irradiance</td>
+                            <td>1,237 kWh/m²</td>
+                            <td>~1,000 kWh/m²</td>
+                            <td><span class="badge badge-success">+24%</span></td>
+                        </tr>
+                        <tr>
+                            <td>Existing solar adoption</td>
+                            <td>10%</td>
+                            <td>4.6%</td>
+                            <td><span class="badge badge-primary">Market proven</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Maps Section -->
+        <div id="maps" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Target Area Maps</h1>
+
+            <div class="card">
+                <div class="card-title">Drive-Time Zones from Okehampton</div>
+                <div class="card-subtitle">30-min (green), 45-min (yellow), 70-min (orange) approximate zones with target postcode districts</div>
+                <div id="main-map" class="map-container"></div>
+            </div>
+
+            <div class="chart-row">
+                <div class="card">
+                    <div class="card-title">Wednesday Routes</div>
+                    <div id="wed-map" class="map-container" style="height: 350px;"></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Thursday Routes</div>
+                    <div id="thu-map" class="map-container" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consumption Section -->
+        <div id="consumption" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Electricity Consumption Analysis</h1>
+
+            <div class="card">
+                <div class="card-title">Postcode Districts by Mean Electricity Consumption</div>
+                <div class="card-subtitle">Higher consumption = higher bills = stronger savings pitch. UK average: 3,449 kWh/year</div>
+                <div id="consumption-bar" class="chart-container" style="height: 500px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">High-Consumption Hotspots</div>
+                <div class="card-subtitle">Individual postcodes with 10+ meters showing extreme consumption (likely off-gas electric heating)</div>
+                <div id="hotspots-chart" class="chart-container"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Consumption Distribution</div>
+                <div class="card-subtitle">How target zones compare to UK average</div>
+                <div id="consumption-box" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Comparison Section -->
+        <div id="comparison" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Devon vs UK Comparison</h1>
+
+            <div class="chart-row">
+                <div class="card">
+                    <div class="card-title">Key Metrics Comparison</div>
+                    <div id="comparison-bar" class="chart-container"></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Solar Adoption by Local Authority</div>
+                    <div id="solar-adoption" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Owner-Occupation Rates</div>
+                <div class="card-subtitle">Census 2021 data - higher ownership = more eligible households</div>
+                <div id="ownership-chart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Scoring Section -->
+        <div id="scoring" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Zone Scoring Analysis</h1>
+
+            <div class="card">
+                <div class="card-title">Multi-Factor Zone Comparison</div>
+                <div class="card-subtitle">Radar chart showing how each priority zone scores across key factors</div>
+                <div id="radar-chart" class="chart-container" style="height: 500px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Composite Score Breakdown</div>
+                <div class="card-subtitle">Stacked bar showing contribution of each factor to total score</div>
+                <div id="score-breakdown" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Opportunity Matrix Section -->
+        <div id="opportunity" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Opportunity Matrix</h1>
+
+            <div class="card">
+                <div class="card-title">Consumption vs Solar Saturation</div>
+                <div class="card-subtitle">Bubble size = number of meters. Top-left quadrant = highest opportunity (high consumption, low saturation)</div>
+                <div id="scatter-matrix" class="chart-container" style="height: 550px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Priority Quadrant Analysis</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Quadrant</th>
+                            <th>Characteristics</th>
+                            <th>Strategy</th>
+                            <th>Zones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-success">HIGH PRIORITY</span></td>
+                            <td>High consumption, low saturation</td>
+                            <td>Maximum focus - untapped high-value</td>
+                            <td>EX20 3, EX21, EX22, PL16</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-primary">GOOD</span></td>
+                            <td>High consumption, moderate saturation</td>
+                            <td>Strong opportunity, proven market</td>
+                            <td>EX17, EX20 4, PL15</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-warning">MODERATE</span></td>
+                            <td>Moderate consumption, low saturation</td>
+                            <td>Secondary targets if time permits</td>
+                            <td>PL19, TQ13</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-danger">AVOID</span></td>
+                            <td>Low consumption or high saturation</td>
+                            <td>Skip unless no alternatives</td>
+                            <td>Exeter city, high-solar areas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Schedule Section -->
+        <div id="schedule" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Daily Schedule</h1>
+
+            <div class="chart-row">
+                <div class="card">
+                    <div class="card-title">Tuesday Evening</div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">6:00 PM</div>
+                            <div class="timeline-title">Arrive Okehampton</div>
+                            <div class="timeline-desc">Check into accommodation, unpack equipment</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">7:00 PM</div>
+                            <div class="timeline-title">Team Briefing</div>
+                            <div class="timeline-desc">Review strategy, assign pairs, distribute materials</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">8:00 PM</div>
+                            <div class="timeline-title">Street Scouting</div>
+                            <div class="timeline-desc">Google Street View review of target areas</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">9:30 PM</div>
+                            <div class="timeline-title">Rest</div>
+                            <div class="timeline-desc">Charge devices, early night</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Wednesday</div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">8:30 AM</div>
+                            <div class="timeline-title">Depart Base</div>
+                            <div class="timeline-desc">Pair 1 → EX20 3 | Pair 2 → EX17 6</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">9:00 AM - 12:30 PM</div>
+                            <div class="timeline-title">Morning Session</div>
+                            <div class="timeline-desc">Target: 60-80 doors per person</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">12:30 PM</div>
+                            <div class="timeline-title">Lunch Break</div>
+                            <div class="timeline-desc">Check-in call, share learnings</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">1:15 PM - 5:30 PM</div>
+                            <div class="timeline-title">Afternoon Session</div>
+                            <div class="timeline-desc">Pair 1 → EX20 4 | Pair 2 → EX20 2</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">6:30 PM</div>
+                            <div class="timeline-title">Evening Debrief</div>
+                            <div class="timeline-desc">Review leads, adjust Thursday plan</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Thursday</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-time">8:30 AM</div>
+                        <div class="timeline-title">Depart Base</div>
+                        <div class="timeline-desc">Pair 1 → PL19 | Pair 2 → EX22</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">9:00 AM - 12:30 PM</div>
+                        <div class="timeline-title">Morning Session</div>
+                        <div class="timeline-desc">Target: 80-100 doors per person</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">12:30 PM</div>
+                        <div class="timeline-title">Lunch Break</div>
+                        <div class="timeline-desc">Tavistock / Holsworthy</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">1:15 PM - 4:30 PM</div>
+                        <div class="timeline-title">Afternoon Session</div>
+                        <div class="timeline-desc">Follow-up hot leads OR new territory (PL15/EX19)</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">4:30 PM</div>
+                        <div class="timeline-title">Pack Up & Depart</div>
+                        <div class="timeline-desc">Final documentation, confirm appointments</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Visual Schedule (Gantt)</div>
+                <div id="gantt-chart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- Funnel Section -->
+        <div id="funnel" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Conversion Funnel</h1>
+
+            <div class="chart-row">
+                <div class="card">
+                    <div class="card-title">Expected Conversion Rates</div>
+                    <div id="funnel-chart" class="chart-container" style="height: 450px;"></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Scenario Analysis</div>
+                    <div id="scenario-chart" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Conversion Benchmarks</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Stage</th>
+                            <th>Conservative</th>
+                            <th>Target</th>
+                            <th>Stretch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total Doors Knocked</td>
+                            <td>500</td>
+                            <td>700</td>
+                            <td>900</td>
+                        </tr>
+                        <tr>
+                            <td>Conversations (40-50%)</td>
+                            <td>200</td>
+                            <td>315</td>
+                            <td>450</td>
+                        </tr>
+                        <tr>
+                            <td>Pre-qualified Leads (20%)</td>
+                            <td>40</td>
+                            <td>63</td>
+                            <td>90</td>
+                        </tr>
+                        <tr>
+                            <td>Appointments Set (60%)</td>
+                            <td>24</td>
+                            <td>38</td>
+                            <td>54</td>
+                        </tr>
+                        <tr>
+                            <td>Sign-ups (30-40%)</td>
+                            <td>7</td>
+                            <td>13</td>
+                            <td>22</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KPIs Section -->
+        <div id="kpis" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">KPIs & Tracking</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">80-100</div>
+                    <div class="stat-label">Doors per person per day (target)</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">45%</div>
+                    <div class="stat-label">Conversation rate target</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value">10-15%</div>
+                    <div class="stat-label">Appointment conversion rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">35%</div>
+                    <div class="stat-label">Appointment to sign-up rate</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Individual Performance Metrics</div>
+                <div id="kpi-gauges" class="chart-container"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Lead Capture Checklist</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Required</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Full name</td><td><span class="badge badge-danger">Required</span></td><td>First and last name</td></tr>
+                        <tr><td>Address + Postcode</td><td><span class="badge badge-danger">Required</span></td><td>Full address for system design</td></tr>
+                        <tr><td>Mobile number</td><td><span class="badge badge-danger">Required</span></td><td>For appointment confirmation</td></tr>
+                        <tr><td>Email</td><td><span class="badge badge-warning">Preferred</span></td><td>For follow-up materials</td></tr>
+                        <tr><td>Property type</td><td><span class="badge badge-danger">Required</span></td><td>Detached/semi/terrace</td></tr>
+                        <tr><td>Roof orientation</td><td><span class="badge badge-danger">Required</span></td><td>S/SW/SE/W/E</td></tr>
+                        <tr><td>Heating type</td><td><span class="badge badge-danger">Required</span></td><td>Electric/oil/gas</td></tr>
+                        <tr><td>Monthly electricity bill</td><td><span class="badge badge-warning">Preferred</span></td><td>Estimate is fine</td></tr>
+                        <tr><td>EPC rating</td><td><span class="badge badge-primary">Optional</span></td><td>If known</td></tr>
+                        <tr><td>Preferred appointment time</td><td><span class="badge badge-danger">Required</span></td><td>Day + AM/PM</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Full Guide Section -->
+        <div id="guide" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Full Strategy Guide</h1>
+            <div class="card guide-content" id="guide-content">
+                <!-- Markdown content will be loaded here -->
+                <p>Loading guide content...</p>
+            </div>
+        </div>
+
+        <!-- Postcodes Section -->
+        <div id="postcodes" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Postcode Reference Data</h1>
+
+            <div class="card">
+                <div class="card-title">Postcode Districts Summary</div>
+                <div class="card-subtitle">All districts within 70-min drive of Okehampton, sorted by mean consumption</div>
+                <table class="data-table" id="postcode-table">
+                    <thead>
+                        <tr>
+                            <th>Outcode</th>
+                            <th>Area</th>
+                            <th>Mean kWh</th>
+                            <th>Meters</th>
+                            <th>Drive Time</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PL16</td><td>Lifton</td><td>5,239</td><td>919</td><td>15 min</td><td><span class="badge badge-success">HIGH</span></td></tr>
+                        <tr><td>EX37</td><td>Umberleigh</td><td>5,049</td><td>1,601</td><td>45 min</td><td><span class="badge badge-success">HIGH</span></td></tr>
+                        <tr><td>EX22</td><td>Holsworthy</td><td>4,929</td><td>5,205</td><td>25-30 min</td><td><span class="badge badge-success">HIGH</span></td></tr>
+                        <tr><td>EX21</td><td>Beaworthy</td><td>4,851</td><td>1,999</td><td>25-30 min</td><td><span class="badge badge-success">HIGH</span></td></tr>
+                        <tr><td>EX19</td><td>Winkleigh</td><td>4,699</td><td>1,750</td><td>20 min</td><td><span class="badge badge-success">HIGH</span></td></tr>
+                        <tr><td>PL15</td><td>Launceston</td><td>4,399</td><td>9,897</td><td>25-30 min</td><td><span class="badge badge-primary">GOOD</span></td></tr>
+                        <tr><td>EX17</td><td>Crediton</td><td>4,368</td><td>9,021</td><td>15-20 min</td><td><span class="badge badge-primary">GOOD</span></td></tr>
+                        <tr><td>EX20</td><td>Okehampton</td><td>4,200</td><td>10,386</td><td>Base</td><td><span class="badge badge-primary">GOOD</span></td></tr>
+                        <tr><td>TQ9</td><td>Totnes</td><td>4,200</td><td>9,614</td><td>55-60 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>TQ10</td><td>South Brent</td><td>4,156</td><td>1,911</td><td>45-50 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>PL17</td><td>Callington</td><td>4,077</td><td>4,787</td><td>35-40 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>EX36</td><td>South Molton</td><td>4,056</td><td>4,546</td><td>40-45 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>PL18</td><td>Gunnislake</td><td>4,051</td><td>2,555</td><td>35-40 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>PL20</td><td>Yelverton</td><td>4,037</td><td>5,388</td><td>30-35 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>EX23</td><td>Bude</td><td>3,958</td><td>8,536</td><td>40-45 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>TQ13</td><td>Bovey Tracey</td><td>3,897</td><td>11,844</td><td>35-40 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                        <tr><td>PL19</td><td>Tavistock</td><td>3,503</td><td>8,161</td><td>20-25 min</td><td><span class="badge badge-primary">GOOD</span></td></tr>
+                        <tr><td>EX32</td><td>Barnstaple</td><td>3,345</td><td>10,700</td><td>45-50 min</td><td><span class="badge badge-warning">MODERATE</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-title">High-Consumption Individual Postcodes</div>
+                <div class="card-subtitle">Postcodes with 10+ meters showing extreme consumption (10,000+ kWh/year)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Postcode</th>
+                            <th>Mean kWh</th>
+                            <th>Meters</th>
+                            <th>Area</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>EX20 3NG</td><td>15,451</td><td>11</td><td>Northlew</td><td>Extreme off-gas - top priority</td></tr>
+                        <tr><td>EX20 4ES</td><td>12,536</td><td>10</td><td>Lydford</td><td>Very high - rural</td></tr>
+                        <tr><td>EX23 0NJ</td><td>12,101</td><td>13</td><td>Bude area</td><td>Coastal rural</td></tr>
+                        <tr><td>EX20 2PZ</td><td>12,091</td><td>10</td><td>North Tawton</td><td>Off-gas pocket</td></tr>
+                        <tr><td>PL19 0JT</td><td>11,817</td><td>11</td><td>Tavistock</td><td>Rural Tavistock</td></tr>
+                        <tr><td>EX17 6JP</td><td>11,589</td><td>11</td><td>Crediton rural</td><td>Farm properties</td></tr>
+                        <tr><td>EX20 4BW</td><td>11,004</td><td>10</td><td>Bridestowe</td><td>Village off-gas</td></tr>
+                        <tr><td>EX17 5DL</td><td>10,811</td><td>13</td><td>Crediton rural</td><td>High priority</td></tr>
+                        <tr><td>EX17 6LB</td><td>10,715</td><td>19</td><td>Crediton rural</td><td>Good density</td></tr>
+                        <tr><td>EX20 2AL</td><td>10,228</td><td>16</td><td>North Tawton</td><td>Village centre</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scripts Section -->
+        <div id="scripts" class="section">
+            <h1 style="font-size: 1.75rem; margin-bottom: 25px;">Pitch Scripts & Objection Handling</h1>
+
+            <div class="card">
+                <div class="card-title">Opening Script (15-20 seconds)</div>
+                <blockquote style="font-size: 1.1rem; background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    "Good [morning/afternoon], I'm <strong>[Name]</strong> from <strong>[Company]</strong>. We're in the area helping homeowners like yourself reduce their electricity bills by <strong>£150-300 per month</strong> with a fully-maintained solar and battery system - <strong>completely free to install</strong>. Do you own this property?"
+                </blockquote>
+                <p style="margin-top: 15px;"><strong>If YES:</strong> "Brilliant. Have you looked into solar before, or is this something new?"</p>
+                <p><strong>If NO (renter):</strong> "No problem at all. Do you know if your landlord might be interested? [Get details or move on]"</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Quick Pre-Qualification (30 seconds)</div>
+                <ol style="font-size: 1rem; padding-left: 25px;">
+                    <li style="margin-bottom: 10px;"><strong>"Do you own this property?"</strong> (MUST be yes)</li>
+                    <li style="margin-bottom: 10px;"><strong>"Is your roof south-facing, or does it get good sun?"</strong> (Ideal: south/SW/SE, pitched)</li>
+                    <li><strong>"What's your electricity bill like at the moment?"</strong> (Higher = better fit)</li>
+                </ol>
+                <p style="margin-top: 15px; color: var(--danger);"><strong>Disqualify if:</strong> Renter, flat, heavy shading, north-facing only, recent solar installation</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Devon Rural Pain Points</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Pain Point</th>
+                            <th>Pitch Angle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Off-gas electric heating</td>
+                            <td>"You're paying premium rates to heat your home. This system cuts that dramatically."</td>
+                        </tr>
+                        <tr>
+                            <td>High winter bills</td>
+                            <td>"Imagine your January bill being half what it was - that's what we're seeing."</td>
+                        </tr>
+                        <tr>
+                            <td>Oil price volatility</td>
+                            <td>"Unlike oil, the sun doesn't have price shocks. Lock in savings for 25 years."</td>
+                        </tr>
+                        <tr>
+                            <td>Energy independence</td>
+                            <td>"With batteries, you're covered even during power cuts - common in rural areas."</td>
+                        </tr>
+                        <tr>
+                            <td>House value</td>
+                            <td>"Solar adds 4-14% to property value according to recent studies."</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Objection Handling</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Objection</th>
+                            <th>Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>"I'm too old / won't be here 25 years"</td>
+                            <td>"The lease transfers with the property - it's actually a selling point for buyers. And you'll see savings from day one."</td>
+                        </tr>
+                        <tr>
+                            <td>"What's the catch?"</td>
+                            <td>"Fair question. We get paid by Hometree, not you. Your only commitment is the monthly lease, which is fixed to rise only 2.5% per year - less than inflation."</td>
+                        </tr>
+                        <tr>
+                            <td>"I need to think about it"</td>
+                            <td>"Absolutely. Can I book a 30-minute appointment for our technical team to show you exactly what you'd save? No obligation, just the numbers."</td>
+                        </tr>
+                        <tr>
+                            <td>"I've had bad experiences with solar salespeople"</td>
+                            <td>"I understand. This isn't about pushy sales - it's a straightforward lease. You'll meet our technical team who'll design the system properly."</td>
+                        </tr>
+                        <tr>
+                            <td>"Already have solar"</td>
+                            <td>"Great choice! Do you have batteries? We can often add storage to existing systems. Also - know any neighbours who might be interested?"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Closing for Appointment</div>
+                <blockquote style="font-size: 1.1rem; background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                    "Based on what you've told me, you'd be a great fit. Our technical supervisor can visit this week or next to design your system and show you the <strong>exact savings</strong>. Would <strong>[Day] morning or afternoon</strong> work better?"
+                </blockquote>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Data
+        const postcodeData = [
+            {code: 'PL16', area: 'Lifton', mean: 5239, meters: 919, drive: 15},
+            {code: 'EX37', area: 'Umberleigh', mean: 5049, meters: 1601, drive: 45},
+            {code: 'EX22', area: 'Holsworthy', mean: 4929, meters: 5205, drive: 28},
+            {code: 'EX21', area: 'Beaworthy', mean: 4851, meters: 1999, drive: 28},
+            {code: 'EX19', area: 'Winkleigh', mean: 4699, meters: 1750, drive: 20},
+            {code: 'PL15', area: 'Launceston', mean: 4399, meters: 9897, drive: 28},
+            {code: 'EX17', area: 'Crediton', mean: 4368, meters: 9021, drive: 18},
+            {code: 'EX20', area: 'Okehampton', mean: 4200, meters: 10386, drive: 0},
+            {code: 'TQ9', area: 'Totnes', mean: 4200, meters: 9614, drive: 58},
+            {code: 'TQ10', area: 'South Brent', mean: 4156, meters: 1911, drive: 48},
+            {code: 'PL17', area: 'Callington', mean: 4077, meters: 4787, drive: 38},
+            {code: 'EX36', area: 'South Molton', mean: 4056, meters: 4546, drive: 43},
+            {code: 'PL18', area: 'Gunnislake', mean: 4051, meters: 2555, drive: 38},
+            {code: 'PL20', area: 'Yelverton', mean: 4037, meters: 5388, drive: 33},
+            {code: 'EX23', area: 'Bude', mean: 3958, meters: 8536, drive: 43},
+            {code: 'TQ13', area: 'Bovey Tracey', mean: 3897, meters: 11844, drive: 38},
+            {code: 'PL19', area: 'Tavistock', mean: 3503, meters: 8161, drive: 23},
+            {code: 'EX32', area: 'Barnstaple', mean: 3345, meters: 10700, drive: 48}
+        ];
+
+        const solarAdoption = [
+            {area: 'Mid Devon', pct: 14.92},
+            {area: 'South Hams', pct: 14.63},
+            {area: 'North Devon', pct: 10.94},
+            {area: 'East Devon', pct: 9.37},
+            {area: 'Teignbridge', pct: 8.62},
+            {area: 'Plymouth', pct: 7.16},
+            {area: 'Exeter', pct: 4.92},
+            {area: 'Torbay', pct: 4.35},
+            {area: 'UK Average', pct: 4.6}
+        ];
+
+        const zoneScores = {
+            labels: ['Consumption', 'Off-Gas', 'Ownership', 'Low Saturation', 'Housing Stock', 'Accessibility'],
+            zones: [
+                {name: 'EX20 3 (Northlew)', scores: [95, 90, 75, 80, 85, 90], color: '#2563eb'},
+                {name: 'EX20 4 (Lydford)', scores: [88, 85, 75, 78, 82, 85], color: '#059669'},
+                {name: 'EX22 (Holsworthy)', scores: [85, 88, 72, 82, 90, 75], color: '#d97706'},
+                {name: 'EX17 (Crediton)', scores: [78, 70, 68, 65, 75, 90], color: '#dc2626'},
+                {name: 'PL19 (Tavistock)', scores: [65, 60, 70, 70, 72, 92], color: '#7c3aed'},
+                {name: 'PL15 (Launceston)', scores: [75, 72, 68, 75, 70, 78], color: '#0891b2'}
+            ]
+        };
+
+        // Priority Zones Chart
+        Plotly.newPlot('priority-zones-chart', [{
+            type: 'bar',
+            x: [92, 89, 87, 85, 84, 82, 80, 78],
+            y: ['EX20 3 (Northlew)', 'EX20 4 (Lydford)', 'EX22 (Holsworthy)', 'EX17 6 (Crediton N)', 'EX21 (Beaworthy)', 'EX20 2 (N. Tawton)', 'PL19 (Tavistock)', 'EX17 5 (Crediton S)'],
+            orientation: 'h',
+            marker: {
+                color: ['#059669', '#059669', '#059669', '#2563eb', '#2563eb', '#2563eb', '#d97706', '#d97706']
+            },
+            text: [92, 89, 87, 85, 84, 82, 80, 78].map(v => v + '/100'),
+            textposition: 'outside'
+        }], {
+            margin: {l: 150, r: 60, t: 20, b: 40},
+            xaxis: {title: 'Composite Score', range: [0, 100]},
+            yaxis: {autorange: 'reversed'},
+            height: 350
+        }, {responsive: true});
+
+        // Targets Gauge
+        Plotly.newPlot('targets-gauge', [
+            {
+                type: 'indicator',
+                mode: 'gauge+number+delta',
+                value: 70,
+                title: {text: 'Target Appointments'},
+                delta: {reference: 40, increasing: {color: '#059669'}},
+                gauge: {
+                    axis: {range: [0, 120]},
+                    bar: {color: '#2563eb'},
+                    steps: [
+                        {range: [0, 40], color: '#fee2e2'},
+                        {range: [40, 70], color: '#fef3c7'},
+                        {range: [70, 120], color: '#d1fae5'}
+                    ],
+                    threshold: {
+                        line: {color: '#059669', width: 4},
+                        thickness: 0.75,
+                        value: 70
+                    }
+                }
+            }
+        ], {
+            margin: {l: 30, r: 30, t: 80, b: 30},
+            height: 300
+        }, {responsive: true});
+
+        // Consumption Bar Chart
+        Plotly.newPlot('consumption-bar', [{
+            type: 'bar',
+            y: postcodeData.map(d => d.code + ' (' + d.area + ')'),
+            x: postcodeData.map(d => d.mean),
+            orientation: 'h',
+            marker: {
+                color: postcodeData.map(d => d.mean > 4500 ? '#059669' : d.mean > 4000 ? '#2563eb' : d.mean > 3500 ? '#d97706' : '#94a3b8')
+            },
+            text: postcodeData.map(d => d.mean.toLocaleString() + ' kWh'),
+            textposition: 'outside'
+        }], {
+            margin: {l: 160, r: 80, t: 20, b: 50},
+            xaxis: {title: 'Mean Annual Electricity Consumption (kWh)'},
+            yaxis: {autorange: 'reversed'},
+            shapes: [{
+                type: 'line',
+                x0: 3449, x1: 3449,
+                y0: -0.5, y1: postcodeData.length - 0.5,
+                line: {color: '#dc2626', width: 2, dash: 'dash'}
+            }],
+            annotations: [{
+                x: 3449,
+                y: postcodeData.length - 1,
+                text: 'UK Average (3,449)',
+                showarrow: true,
+                arrowhead: 2,
+                ax: 60,
+                ay: 0
+            }]
+        }, {responsive: true});
+
+        // Hotspots Chart
+        const hotspots = [
+            {pc: 'EX20 3NG', mean: 15451},
+            {pc: 'EX20 4ES', mean: 12536},
+            {pc: 'EX23 0NJ', mean: 12101},
+            {pc: 'EX20 2PZ', mean: 12091},
+            {pc: 'PL19 0JT', mean: 11817},
+            {pc: 'EX17 6JP', mean: 11589},
+            {pc: 'EX20 4BW', mean: 11004},
+            {pc: 'EX17 5DL', mean: 10811},
+            {pc: 'EX17 6LB', mean: 10715},
+            {pc: 'EX20 2AL', mean: 10228}
+        ];
+
+        Plotly.newPlot('hotspots-chart', [{
+            type: 'bar',
+            x: hotspots.map(h => h.pc),
+            y: hotspots.map(h => h.mean),
+            marker: {
+                color: hotspots.map(h => h.mean > 12000 ? '#dc2626' : h.mean > 11000 ? '#d97706' : '#2563eb')
+            },
+            text: hotspots.map(h => (h.mean / 1000).toFixed(1) + 'k'),
+            textposition: 'outside'
+        }], {
+            margin: {l: 60, r: 20, t: 20, b: 80},
+            yaxis: {title: 'Mean kWh/year'},
+            xaxis: {tickangle: -45},
+            shapes: [{
+                type: 'line',
+                x0: -0.5, x1: hotspots.length - 0.5,
+                y0: 3449, y1: 3449,
+                line: {color: '#059669', width: 2, dash: 'dash'}
+            }]
+        }, {responsive: true});
+
+        // Consumption Box Plot
+        Plotly.newPlot('consumption-box', [{
+            type: 'box',
+            y: [4200, 4368, 4851, 4929, 5239, 4699, 4399, 3503, 4037, 4077],
+            name: 'Target Zones',
+            marker: {color: '#2563eb'},
+            boxpoints: 'all'
+        }, {
+            type: 'box',
+            y: [3449, 3500, 3400, 3550, 3300, 3600, 3450],
+            name: 'UK Average Range',
+            marker: {color: '#94a3b8'},
+            boxpoints: 'all'
+        }], {
+            margin: {l: 60, r: 20, t: 20, b: 40},
+            yaxis: {title: 'kWh/year'}
+        }, {responsive: true});
+
+        // Comparison Bar Chart
+        Plotly.newPlot('comparison-bar', [{
+            type: 'bar',
+            name: 'Devon/West Devon',
+            x: ['Electricity (kWh)', 'Owner-occupation (%)', 'Off-gas-grid (%)', 'Solar adoption (%)'],
+            y: [4200, 71, 11, 10],
+            marker: {color: '#2563eb'}
+        }, {
+            type: 'bar',
+            name: 'UK Average',
+            x: ['Electricity (kWh)', 'Owner-occupation (%)', 'Off-gas-grid (%)', 'Solar adoption (%)'],
+            y: [3449, 65, 8.6, 4.6],
+            marker: {color: '#94a3b8'}
+        }], {
+            barmode: 'group',
+            margin: {l: 60, r: 20, t: 20, b: 80}
+        }, {responsive: true});
+
+        // Solar Adoption Chart
+        Plotly.newPlot('solar-adoption', [{
+            type: 'bar',
+            x: solarAdoption.map(s => s.area),
+            y: solarAdoption.map(s => s.pct),
+            marker: {
+                color: solarAdoption.map(s => s.area === 'UK Average' ? '#94a3b8' : '#059669')
+            },
+            text: solarAdoption.map(s => s.pct + '%'),
+            textposition: 'outside'
+        }], {
+            margin: {l: 50, r: 20, t: 20, b: 100},
+            yaxis: {title: '% of homes with solar'},
+            xaxis: {tickangle: -45}
+        }, {responsive: true});
+
+        // Ownership Chart
+        Plotly.newPlot('ownership-chart', [{
+            type: 'bar',
+            x: ['West Devon', 'Mid Devon', 'Devon County', 'England'],
+            y: [71, 67.6, 68, 65],
+            marker: {
+                color: ['#2563eb', '#2563eb', '#059669', '#94a3b8']
+            },
+            text: ['71%', '67.6%', '68%', '65%'],
+            textposition: 'outside'
+        }], {
+            margin: {l: 50, r: 20, t: 20, b: 60},
+            yaxis: {title: 'Owner-occupation rate (%)'}
+        }, {responsive: true});
+
+        // Radar Chart
+        const radarTraces = zoneScores.zones.map(zone => ({
+            type: 'scatterpolar',
+            r: [...zone.scores, zone.scores[0]],
+            theta: [...zoneScores.labels, zoneScores.labels[0]],
+            fill: 'toself',
+            name: zone.name,
+            line: {color: zone.color}
+        }));
+
+        Plotly.newPlot('radar-chart', radarTraces, {
+            polar: {
+                radialaxis: {
+                    visible: true,
+                    range: [0, 100]
+                }
+            },
+            margin: {l: 80, r: 80, t: 40, b: 40}
+        }, {responsive: true});
+
+        // Score Breakdown
+        Plotly.newPlot('score-breakdown', [
+            {name: 'Consumption', type: 'bar', x: ['EX20 3', 'EX20 4', 'EX22', 'EX17', 'PL19', 'PL15'], y: [28.5, 26.4, 25.5, 23.4, 19.5, 22.5], marker: {color: '#2563eb'}},
+            {name: 'Off-Gas', type: 'bar', x: ['EX20 3', 'EX20 4', 'EX22', 'EX17', 'PL19', 'PL15'], y: [22.5, 21.25, 22, 17.5, 15, 18], marker: {color: '#059669'}},
+            {name: 'Ownership', type: 'bar', x: ['EX20 3', 'EX20 4', 'EX22', 'EX17', 'PL19', 'PL15'], y: [15, 15, 14.4, 13.6, 14, 13.6], marker: {color: '#d97706'}},
+            {name: 'Low Saturation', type: 'bar', x: ['EX20 3', 'EX20 4', 'EX22', 'EX17', 'PL19', 'PL15'], y: [12, 11.7, 12.3, 9.75, 10.5, 11.25], marker: {color: '#7c3aed'}},
+            {name: 'Housing Stock', type: 'bar', x: ['EX20 3', 'EX20 4', 'EX22', 'EX17', 'PL19', 'PL15'], y: [8.5, 8.2, 9, 7.5, 7.2, 7], marker: {color: '#0891b2'}}
+        ], {
+            barmode: 'stack',
+            margin: {l: 50, r: 20, t: 20, b: 60},
+            yaxis: {title: 'Composite Score'}
+        }, {responsive: true});
+
+        // Scatter Matrix
+        Plotly.newPlot('scatter-matrix', [{
+            type: 'scatter',
+            mode: 'markers+text',
+            x: postcodeData.map(d => d.mean),
+            y: [12, 10, 9, 8, 8, 10, 15, 10, 12, 11, 9, 8, 8, 9, 8, 10, 11, 10], // Estimated saturation
+            text: postcodeData.map(d => d.code),
+            textposition: 'top center',
+            marker: {
+                size: postcodeData.map(d => Math.sqrt(d.meters) * 1.5),
+                color: postcodeData.map((d, i) => {
+                    const sat = [12, 10, 9, 8, 8, 10, 15, 10, 12, 11, 9, 8, 8, 9, 8, 10, 11, 10][i];
+                    if (d.mean > 4200 && sat < 11) return '#059669';
+                    if (d.mean > 3800) return '#2563eb';
+                    return '#d97706';
+                }),
+                opacity: 0.7
+            }
+        }], {
+            margin: {l: 60, r: 40, t: 40, b: 60},
+            xaxis: {title: 'Mean Electricity Consumption (kWh/year)'},
+            yaxis: {title: 'Solar Saturation (% of homes)', autorange: 'reversed'},
+            shapes: [
+                {type: 'line', x0: 4000, x1: 4000, y0: 7, y1: 16, line: {color: '#94a3b8', dash: 'dash'}},
+                {type: 'line', x0: 3200, x1: 5300, y0: 11, y1: 11, line: {color: '#94a3b8', dash: 'dash'}}
+            ],
+            annotations: [
+                {x: 4800, y: 8.5, text: 'HIGH PRIORITY', showarrow: false, font: {color: '#059669', size: 14}},
+                {x: 3500, y: 8.5, text: 'MODERATE', showarrow: false, font: {color: '#d97706', size: 12}},
+                {x: 4800, y: 13, text: 'GOOD', showarrow: false, font: {color: '#2563eb', size: 12}}
+            ]
+        }, {responsive: true});
+
+        // Gantt Chart
+        Plotly.newPlot('gantt-chart', [
+            {type: 'bar', orientation: 'h', y: ['Tue Eve', 'Tue Eve', 'Wed AM', 'Wed AM', 'Wed PM', 'Wed PM', 'Wed Eve', 'Thu AM', 'Thu AM', 'Thu PM', 'Thu PM'],
+             x: [1, 1.5, 3.5, 3.5, 4.25, 4.25, 1.5, 3.5, 3.5, 3.25, 0.5],
+             base: [18, 19.5, 9, 9, 13.25, 13.25, 18.5, 9, 9, 13.25, 16.5],
+             text: ['Arrive', 'Brief/Scout', 'P1: EX20 3', 'P2: EX17', 'P1: EX20 4', 'P2: EX20 2', 'Debrief', 'P1: PL19', 'P2: EX22', 'Follow-up', 'Pack/Leave'],
+             textposition: 'inside',
+             marker: {color: ['#94a3b8', '#2563eb', '#059669', '#d97706', '#059669', '#d97706', '#7c3aed', '#059669', '#d97706', '#2563eb', '#94a3b8']}
+            }
+        ], {
+            margin: {l: 80, r: 20, t: 20, b: 60},
+            xaxis: {title: 'Hour of Day', range: [8, 21], tickvals: [9, 12, 15, 18, 21]},
+            yaxis: {autorange: 'reversed'},
+            barmode: 'overlay'
+        }, {responsive: true});
+
+        // Funnel Chart
+        Plotly.newPlot('funnel-chart', [{
+            type: 'funnel',
+            y: ['Doors Knocked', 'Conversations', 'Pre-qualified', 'Appointments Set', 'Sign-ups'],
+            x: [700, 315, 63, 38, 13],
+            textinfo: 'value+percent initial',
+            marker: {
+                color: ['#2563eb', '#059669', '#d97706', '#7c3aed', '#dc2626']
+            }
+        }], {
+            margin: {l: 120, r: 20, t: 20, b: 20}
+        }, {responsive: true});
+
+        // Scenario Chart
+        Plotly.newPlot('scenario-chart', [{
+            type: 'bar',
+            name: 'Conservative',
+            x: ['Doors', 'Appointments', 'Sign-ups'],
+            y: [500, 24, 7],
+            marker: {color: '#94a3b8'}
+        }, {
+            type: 'bar',
+            name: 'Target',
+            x: ['Doors', 'Appointments', 'Sign-ups'],
+            y: [700, 38, 13],
+            marker: {color: '#2563eb'}
+        }, {
+            type: 'bar',
+            name: 'Stretch',
+            x: ['Doors', 'Appointments', 'Sign-ups'],
+            y: [900, 54, 22],
+            marker: {color: '#059669'}
+        }], {
+            barmode: 'group',
+            margin: {l: 50, r: 20, t: 20, b: 60}
+        }, {responsive: true});
+
+        // KPI Gauges
+        Plotly.newPlot('kpi-gauges', [
+            {type: 'indicator', mode: 'gauge+number', value: 90, title: {text: 'Doors/Day'}, domain: {x: [0, 0.3], y: [0, 1]}, gauge: {axis: {range: [0, 150]}, bar: {color: '#2563eb'}}},
+            {type: 'indicator', mode: 'gauge+number', value: 45, title: {text: 'Conv. Rate %'}, domain: {x: [0.35, 0.65], y: [0, 1]}, gauge: {axis: {range: [0, 100]}, bar: {color: '#059669'}}},
+            {type: 'indicator', mode: 'gauge+number', value: 12, title: {text: 'Appt Rate %'}, domain: {x: [0.7, 1], y: [0, 1]}, gauge: {axis: {range: [0, 30]}, bar: {color: '#d97706'}}}
+        ], {
+            margin: {l: 30, r: 30, t: 60, b: 30},
+            height: 250
+        }, {responsive: true});
+
+        // Initialize Maps
+        function initMaps() {
+            // Main map
+            const mainMap = L.map('main-map').setView([50.738, -4.003], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mainMap);
+
+            // Okehampton marker
+            L.marker([50.738, -4.003]).addTo(mainMap)
+                .bindPopup('<b>Okehampton (EX20)</b><br>Base Location')
+                .openPopup();
+
+            // Target zones
+            const zones = [
+                {name: 'EX20 3 (Northlew)', lat: 50.753, lng: -4.107, priority: 'high'},
+                {name: 'EX20 4 (Lydford)', lat: 50.642, lng: -4.116, priority: 'high'},
+                {name: 'EX17 (Crediton)', lat: 50.785, lng: -3.658, priority: 'good'},
+                {name: 'EX22 (Holsworthy)', lat: 50.809, lng: -4.355, priority: 'high'},
+                {name: 'PL19 (Tavistock)', lat: 50.549, lng: -4.144, priority: 'good'},
+                {name: 'PL15 (Launceston)', lat: 50.637, lng: -4.359, priority: 'good'},
+                {name: 'EX19 (Winkleigh)', lat: 50.862, lng: -3.923, priority: 'high'},
+                {name: 'EX21 (Beaworthy)', lat: 50.798, lng: -4.173, priority: 'high'}
+            ];
+
+            zones.forEach(z => {
+                const color = z.priority === 'high' ? '#059669' : '#2563eb';
+                L.circleMarker([z.lat, z.lng], {
+                    radius: 12,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(mainMap).bindPopup(`<b>${z.name}</b><br>Priority: ${z.priority.toUpperCase()}`);
+            });
+
+            // Drive time circles (approximate)
+            L.circle([50.738, -4.003], {radius: 15000, color: '#059669', fillOpacity: 0.1, weight: 2}).addTo(mainMap); // 30 min
+            L.circle([50.738, -4.003], {radius: 25000, color: '#d97706', fillOpacity: 0.05, weight: 2}).addTo(mainMap); // 45 min
+            L.circle([50.738, -4.003], {radius: 40000, color: '#dc2626', fillOpacity: 0.03, weight: 2}).addTo(mainMap); // 70 min
+
+            // Wednesday map
+            const wedMap = L.map('wed-map').setView([50.76, -3.88], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OSM'
+            }).addTo(wedMap);
+
+            L.marker([50.738, -4.003]).addTo(wedMap).bindPopup('Base');
+            L.marker([50.753, -4.107], {icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#059669;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">P1 AM</div>'})}).addTo(wedMap);
+            L.marker([50.785, -3.658], {icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#d97706;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">P2 AM</div>'})}).addTo(wedMap);
+            L.marker([50.642, -4.116], {icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#059669;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">P1 PM</div>'})}).addTo(wedMap);
+            L.marker([50.78, -3.86], {icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#d97706;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">P2 PM</div>'})}).addTo(wedMap);
+
+            // Thursday map
+            const thuMap = L.map('thu-map').setView([50.68, -4.2], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OSM'
+            }).addTo(thuMap);
+
+            L.marker([50.738, -4.003]).addTo(thuMap).bindPopup('Base');
+            L.marker([50.549, -4.144], {icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#059669;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">P1: Tavistock</div>'})}).addTo(thuMap);
+            L.marker([50.809, -4.355], {icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#d97706;color:white;padding:4px 8px;border-radius:4px;font-size:12px;">P2: Holsworthy</div>'})}).addTo(thuMap);
+        }
+
+        // Embedded guide content
+        const guideMarkdown = `# Field Strategy Guide: Solar Lead Generation
+## Okehampton, Devon (EX20) | February 2026
+
+**Team:** 4 members (2 experienced closers, 2 trainees) | **Vehicles:** 2 cars
+**Duration:** Tuesday evening arrival → Thursday evening departure
+**Base:** Okehampton, Devon (EX20)
+
+---
+
+## Executive Summary
+
+This 2-day door-knocking campaign targets high-potential areas within 70 minutes of Okehampton for Hometree Finance 25-year hybrid solar + battery leases. Devon presents exceptional opportunity:
+
+- **10% of Devon homes already have solar** (double the UK average of 4.6%), demonstrating market acceptance
+- **High electricity consumption** in rural areas: EX20 averages 4,200 kWh/year vs UK average 3,449 kWh
+- **71% owner-occupation** in West Devon (vs 65% England average)
+- **11% off-gas-grid** in Torridge & West Devon (vs 8.6% GB average) = high electric heating bills
+- **Excellent irradiance**: 1,237 kWh/m² in Exeter area (13% above national average)
+
+**Estimated Potential:** With 400-600 doors across 2 days and a 10-20% appointment rate, expect **40-120 qualified appointments** for technical supervisors.
+
+### Priority Zones (Ranked)
+1. **EX20** (Okehampton local) - High consumption, 71% ownership, familiar territory
+2. **EX17** (Crediton) - 15-20 min drive, 4,368 kWh mean, good density
+3. **PL19** (Tavistock) - 20-25 min drive, established suburbs
+4. **EX22** (Holsworthy) - 25-30 min, 4,929 kWh mean, very high off-gas
+5. **EX21** (Beaworthy) - 25-30 min, 4,851 kWh mean, rural gold
+6. **PL15** (Launceston) - 25-30 min, 4,399 kWh mean, Cornwall border
+
+---
+
+## 1. Preparation (Tuesday Evening)
+
+### 1.1 Team Setup
+- Arrive Okehampton by 6pm
+- Evening briefing at accommodation (review this guide, assign pairs)
+- Charge tablets/devices overnight
+
+### 1.2 Pre-Deployment Data Review
+
+#### Top Postcode Districts by Electricity Consumption (70-min radius)
+
+| Rank | Outcode | Area | Mean kWh/yr | Meters | Drive from EX20 |
+|------|---------|------|-------------|--------|-----------------|
+| 1 | PL16 | Lifton | 5,239 | 919 | 15 min |
+| 2 | EX37 | Umberleigh | 5,049 | 1,601 | 45 min |
+| 3 | EX22 | Holsworthy | 4,929 | 5,205 | 25-30 min |
+| 4 | EX21 | Beaworthy | 4,851 | 1,999 | 25-30 min |
+| 5 | EX19 | Winkleigh | 4,699 | 1,750 | 20 min |
+| 6 | PL15 | Launceston | 4,399 | 9,897 | 25-30 min |
+| 7 | EX17 | Crediton | 4,368 | 9,021 | 15-20 min |
+| 8 | **EX20** | **Okehampton** | **4,200** | **10,386** | **Base** |
+| 9 | TQ13 | Bovey Tracey | 3,897 | 11,844 | 35-40 min |
+| 10 | PL20 | Yelverton | 4,037 | 5,388 | 30-35 min |
+| 11 | PL19 | Tavistock | 3,503 | 8,161 | 20-25 min |
+| 12 | EX36 | South Molton | 4,056 | 4,546 | 40-45 min |
+
+*Source: DESNZ Postcode Level Electricity Statistics 2024 (Dec 2025 release)*
+
+#### High-Consumption Individual Postcodes (10+ meters, near Okehampton)
+
+| Postcode | Mean kWh | Meters | Notes |
+|----------|----------|--------|-------|
+| EX20 3NG | 15,451 | 11 | Northlew area - extreme off-gas |
+| EX20 4ES | 12,536 | 10 | Lydford area |
+| EX20 2PZ | 12,091 | 10 | North Tawton |
+| EX17 6JP | 11,589 | 11 | Crediton rural |
+| EX20 4BW | 11,004 | 10 | Bridestowe |
+| EX17 5DL | 10,811 | 13 | Crediton rural |
+| EX17 6LB | 10,715 | 19 | Crediton rural |
+| EX20 2AL | 10,228 | 16 | North Tawton |
+| PL15 8NA | 10,215 | 12 | Launceston rural |
+| EX19 8AP | 10,021 | 10 | Winkleigh |
+
+*These postcodes show 3-4x national average consumption - prime off-gas electric heating candidates*
+
+### 1.3 Tools & Materials Checklist
+- Tablets with Opensolar (for quick roof scans/system designs)
+- Offline maps of target areas
+- Pitch scripts (see Section 5)
+- Lead capture forms (digital/paper backup)
+- Hi-vis vests, ID badges
+- Business cards with QR code to info page
+- Weather-appropriate clothing
+
+### 1.4 Tuesday Evening Street Scouting
+
+Use Google Street View to pre-identify promising streets in Wednesday target areas:
+
+**Look for:**
+- 1960s-1990s semi-detached and detached homes
+- Pitched roofs with south/south-west/south-east orientation
+- Minimal shading from trees/buildings
+- Driveways (indicates ownership)
+- Oil tanks visible (confirms off-gas = high bills)
+- Cul-de-sacs and residential estates (efficient walking routes)
+
+**Avoid:**
+- Flats/apartments
+- New builds (often have solar already or complex leasehold)
+- Listed buildings/conservation areas
+- High-density terraced streets
+- Properties with existing solar
+
+---
+
+## 2. Priority Targeting Methodology
+
+### 2.1 Scoring Criteria (used to rank zones)
+
+| Factor | Weight | Rationale |
+|--------|--------|-----------|
+| Mean electricity consumption | 30% | Higher bills = stronger savings pitch |
+| Off-gas-grid likelihood | 25% | Electric heating = massive bill pain |
+| Owner-occupation rate | 20% | Must own to sign lease |
+| Solar saturation (inverse) | 15% | Avoid oversaturated areas |
+| Housing stock suitability | 10% | Detached/semi > terraced > flats |
+
+### 2.2 Top 8 Postcode Sectors (Ranked by Composite Score)
+
+| Rank | Sector | Area Name | Score | Key Strengths |
+|------|--------|-----------|-------|---------------|
+| 1 | **EX20 3** | Northlew/Hatherleigh | 92/100 | Highest consumption, very rural, high off-gas |
+| 2 | **EX20 4** | Lydford/Bridestowe | 89/100 | Rural, high consumption, good roof stock |
+| 3 | **EX22 6** | Holsworthy rural | 87/100 | 4,929 kWh mean, very high off-gas, 58% detached |
+| 4 | **EX17 6** | Crediton rural (north) | 85/100 | Multiple 10k+ kWh postcodes, good access |
+| 5 | **EX21 5** | Beaworthy | 84/100 | 4,851 kWh mean, extremely rural |
+| 6 | **EX20 2** | North Tawton/South Zeal | 82/100 | High consumption, moderate density |
+| 7 | **PL19 0** | Tavistock suburbs | 80/100 | Good density, established homes, accessible |
+| 8 | **EX17 5** | Crediton rural (south) | 78/100 | Good consumption, reasonable density |
+
+### 2.3 Solar Adoption Context
+
+| Local Authority | Installations | % of Homes | Implication |
+|-----------------|---------------|------------|-------------|
+| Mid Devon | 5,310 | 14.92% | Higher adoption but still 85% untapped |
+| South Hams | 5,750 | 14.63% | Strong acceptance, testimonials available |
+| North Devon | 4,727 | 10.94% | Good opportunity |
+| West Devon | ~3,500 | ~10% | Prime territory |
+| Torridge | ~3,000 | ~9% | High potential |
+
+*Source: Sunsave Energy Jan 2026, MCS installation data May 2024*
+
+---
+
+## 3. Daily Plans
+
+### 3.1 Wednesday (Full Day 1)
+
+#### Morning Session: 9:00 AM - 12:30 PM
+
+**PAIR 1 (Experienced closer + Trainee A) - CAR 1**
+- **Zone:** EX20 3 (Northlew/Hatherleigh area)
+- **Drive time:** 10-15 min from Okehampton
+- **Target streets:** Northlew village (EX20 3NG), Hatherleigh residential (EX20 3QT, 3QU), Exbourne (EX20 3QA, 3RB)
+- **Door target:** 60-80 doors per person (120-160 total)
+- **Focus:** Rural detached/semi-detached, look for oil tanks
+
+**PAIR 2 (Experienced closer + Trainee B) - CAR 2**
+- **Zone:** EX17 6 (Crediton rural north)
+- **Drive time:** 15-20 min via A3072
+- **Target streets:** Villages around Crediton: Sandford, Kennerleigh; EX17 6JP, 6LB, 6AL postcodes
+- **Door target:** 60-80 doors per person (120-160 total)
+- **Focus:** 1970s-1990s rural homes, farmers
+
+#### Lunch Break: 12:30 PM - 1:15 PM
+- PAIR 1: Hatherleigh (local cafes)
+- PAIR 2: Crediton town centre
+- Quick team check-in call
+
+#### Afternoon Session: 1:15 PM - 5:30 PM
+
+**PAIR 1 - Zone:** EX20 4 (Lydford/Bridestowe)
+- **Target:** Bridestowe village (EX20 4BW, 4ES), Lydford area (EX20 4BQ, 4NQ), Bratton Clovelly
+- **Door target:** 80-100 doors per person
+
+**PAIR 2 - Zone:** EX20 2 (North Tawton/South Zeal)
+- **Target:** North Tawton residential (EX20 2AL, 2PZ), South Zeal village (EX20 2QD), Sampford Courtenay
+- **Door target:** 80-100 doors per person
+
+#### Wednesday Evening Debrief: 6:30 PM (Okehampton)
+- Review leads captured
+- Identify hot prospects for follow-up
+- Adjust Thursday plan based on learnings
+
+**Wednesday Targets:** Total doors: 400-520 | Appointments: 40-100 | Hot leads: 20-30
+
+---
+
+### 3.2 Thursday (Full Day 2)
+
+#### Morning Session: 9:00 AM - 12:30 PM
+
+**PAIR 1 - Zone:** PL19 0 (Tavistock suburbs)
+- **Drive time:** 20-25 min via A386
+- **Target:** Tavistock residential estates (1970s-1990s), Whitchurch area, PL19 0JT area (11,817 kWh)
+- **Door target:** 80-100 doors per person
+
+**PAIR 2 - Zone:** EX22 6 (Holsworthy)
+- **Drive time:** 25-30 min via A3072
+- **Target:** Holsworthy residential (58% detached), Cookbury, Thornbury, EX22 6TG area
+- **Door target:** 70-90 doors per person
+
+#### Lunch Break: 12:30 PM - 1:15 PM
+- PAIR 1: Tavistock town centre
+- PAIR 2: Holsworthy
+
+#### Afternoon Session: 1:15 PM - 4:30 PM
+
+**Option A: Follow-up on Wednesday hot leads** (recommended)
+**Option B: New territory** - PAIR 1: PL15/PL16 (Launceston/Lifton) | PAIR 2: EX19 (Winkleigh)
+
+#### Thursday Pack-up: 4:30 PM - 5:30 PM
+- Final lead documentation, confirm appointments, depart
+
+**Thursday Targets:** Total doors: 300-400 | Appointments: 30-80 | Follow-up conversions: 10-20
+
+---
+
+## 4. Logistics
+
+### 4.1 Driving Routes & Parking
+
+| Zone | Best Route from EX20 | Parking Notes |
+|------|---------------------|---------------|
+| EX20 3 (Northlew) | A3072 west → B3215 | Village parking, residential streets |
+| EX20 4 (Lydford) | A386 south → A30 | Lydford village car park |
+| EX17 (Crediton) | A3072 east | Crediton town car parks |
+| EX20 2 (N. Tawton) | A3072 east → B3215 | Village centre parking |
+| PL19 (Tavistock) | A386 south | Bedford Square car park |
+| EX22 (Holsworthy) | A3072 west | Holsworthy Square car park |
+| PL15 (Launceston) | A30 west | Town centre car parks |
+
+### 4.2 Weather Contingency
+- **Light rain:** Continue with waterproofs
+- **Heavy rain:** Focus on follow-up calls, appointment confirmations
+
+### 4.3 Team Communication
+- WhatsApp group for real-time updates
+- Hourly check-ins during knocking sessions
+- GPS location sharing for safety
+
+---
+
+## 5. Tactics for Maximum Conversion
+
+### 5.1 Opening Script (15-20 seconds)
+
+> "Good [morning/afternoon], I'm [Name] from [Company]. We're in the area helping homeowners like yourself reduce their electricity bills by £150-300 per month with a fully-maintained solar and battery system - completely free to install. Do you own this property?"
+
+**If YES:** "Brilliant. Have you looked into solar before?"
+**If NO (renter):** "No problem. Do you know if your landlord might be interested?"
+
+### 5.2 Quick Pre-Qualification (30 seconds)
+
+1. **"Do you own this property?"** (MUST be yes)
+2. **"Is your roof south-facing?"** (Ideal: south/SW/SE, pitched)
+3. **"What's your electricity bill like?"** (Higher = better fit)
+
+**Disqualify if:** Renter, flat, heavy shading, north-facing only, recent solar
+
+### 5.3 Key Pain Points (Devon Rural Specific)
+
+| Pain Point | Pitch Angle |
+|------------|-------------|
+| Off-gas electric heating | "You're paying premium rates to heat your home. This system cuts that dramatically." |
+| High winter bills | "Imagine your January bill being half what it was." |
+| Oil price volatility | "Unlike oil, the sun doesn't have price shocks. Lock in savings for 25 years." |
+| Energy independence | "With batteries, you're covered even during power cuts." |
+| House value | "Solar adds 4-14% to property value." |
+
+### 5.4 Objection Handling
+
+| Objection | Response |
+|-----------|----------|
+| "I'm too old" | "The lease transfers with the property - actually a selling point. Savings from day one." |
+| "What's the catch?" | "We get paid by Hometree, not you. Your only commitment is the monthly lease at 2.5%/year rise - less than inflation." |
+| "Need to think" | "Absolutely. Can I book a 30-min appointment for our technical team to show exact savings? No obligation." |
+| "Bad experiences" | "Understood. This is straightforward - our technical team will design the system properly." |
+| "Already have solar" | "Great! Do you have batteries? Also - know any neighbours who might be interested?" |
+
+### 5.5 Closing for Appointment
+
+> "Based on what you've told me, you'd be a great fit. Our technical supervisor can visit to design your system and show exact savings. Would [Day] morning or afternoon work better?"
+
+---
+
+## 6. KPIs & Tracking
+
+### 6.1 Individual Metrics (per knocker per day)
+
+| Metric | Target | Excellent |
+|--------|--------|-----------|
+| Doors knocked | 80-100 | 120+ |
+| Conversations (30+ sec) | 40-50% | 60%+ |
+| Pre-qualified leads | 15-20% | 25%+ |
+| Appointments set | 8-12% | 15%+ |
+
+### 6.2 Team Metrics (2-day campaign)
+
+| Metric | Conservative | Target | Stretch |
+|--------|--------------|--------|---------|
+| Total doors | 500 | 700 | 900 |
+| Appointments set | 40 | 70 | 120 |
+| Sign-up rate (est.) | 25% | 35% | 45% |
+| **Projected sign-ups** | **10** | **25** | **54** |
+
+### 6.3 Lead Capture Requirements
+
+For each qualified lead, record:
+- Full name, Address + postcode, Mobile number
+- Property type (detached/semi/terrace)
+- Roof orientation estimate
+- Current heating type (electric/oil/gas)
+- Estimated monthly electricity bill
+- Preferred appointment time
+- Any objections/concerns noted
+
+---
+
+## 7. Risks & Mitigations
+
+| Risk | Likelihood | Mitigation |
+|------|------------|------------|
+| Poor weather | Medium | Waterproof gear; indoor follow-up activities |
+| Low answer rates | Medium | Return visits; focus on promising areas |
+| G99 delays (>14 panels) | Medium | Pre-qualify roof size; favour smaller systems |
+| Credit rejection | Medium | Ask about homeowner status early |
+
+### Compliance Notes
+- Always carry ID
+- Respect "No Cold Callers" signs
+- Leave property immediately if asked
+- No knocking after 8pm or before 9am
+- GDPR-compliant data capture
+
+---
+
+## 8. Post-Trip Actions
+
+### Immediate (Thursday evening / Friday)
+- Upload all leads to CRM
+- Send appointment confirmations (SMS + email)
+- Brief technical supervisors
+
+### Follow-up (Week 1)
+- Call warm leads who didn't book
+- Send information packs
+- Request referrals
+
+### Strategic (Ongoing)
+- Plan return visit to highest-performing zones
+- Consider local leaflet drops in EX20 3, EX22 6
+
+---
+
+## Appendix: Data Sources
+
+| Data Type | Source | Date |
+|-----------|--------|------|
+| Postcode electricity | DESNZ Postcode Level Electricity Statistics 2024 | Dec 2025 |
+| Off-gas grid estimates | DESNZ LSOA Estimates | Dec 2025 |
+| Solar installations | Sunsave Energy / MCS Data | May 2024 / Jan 2026 |
+| Owner occupation | ONS Census 2021 | 2021 |
+| Solar irradiance | European Commission PVGIS / Global Solar Atlas | 2024 |
+
+---
+
+*Guide prepared: February 2026 | Data current as of: December 2025 / January 2026*
+`;
+        document.getElementById('guide-content').innerHTML = marked.parse(guideMarkdown);
+
+        // Init maps when section is shown
+        let mapsInitialized = false;
+        const originalShowSection = showSection;
+        showSection = function(sectionId) {
+            originalShowSection(sectionId);
+            if (sectionId === 'maps' && !mapsInitialized) {
+                setTimeout(initMaps, 100);
+                mapsInitialized = true;
+            }
+        };
+
+        // Initialize overview charts on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charts are already initialized above
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Large data files (too big for GitHub)
+postcode_electricity_2024.csv
+offgas_lsoa_2024.xlsx
+
+# Keep the Devon-specific extract
+# devon_electricity.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
