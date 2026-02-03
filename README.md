@@ -4,7 +4,7 @@ Interactive dashboard and field strategy guide for solar panel lead generation c
 
 ## Live Dashboard
 
-**View the dashboard:** [https://YOUR_USERNAME.github.io/SolarLeadGen-Devon-Strategy/](https://YOUR_USERNAME.github.io/SolarLeadGen-Devon-Strategy/)
+**View the dashboard:** [https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/)
 
 ## Overview
 
