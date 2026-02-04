@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Script Training | Emerald Solar</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --accent: #fbbf24;
+            --danger: #dc2626;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-light: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 20px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            overflow-x: auto;
+            background: var(--card);
+            padding: 8px;
+            gap: 8px;
+            position: sticky;
+            top: 68px;
+            z-index: 99;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nav::-webkit-scrollbar { display: none; }
+        .nav-btn {
+            flex-shrink: 0;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 20px;
+            background: var(--card-light);
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            padding: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+        .section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Script Box */
+        .script-box {
+            background: var(--primary-dark);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            border-left: 4px solid var(--accent);
+        }
+        .script-box p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+        .script-box strong {
+            color: var(--accent);
+        }
+        .script-box .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: var(--card-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .question-card .q-num {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+        .question-card .question {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .question-card .why {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Flowchart */
+        .flow-step {
+            background: var(--card-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
+            position: relative;
+        }
+        .flow-step::after {
+            content: "↓";
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        .flow-step:last-child::after { display: none; }
+        .flow-step.success { border-left: 4px solid var(--primary); }
+        .flow-step.fail { border-left: 4px solid var(--danger); }
+        .flow-step .step-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .flow-step .responses {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .flow-step .response {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .flow-step .response.yes { background: rgba(5, 150, 105, 0.3); color: #6ee7b7; }
+        .flow-step .response.no { background: rgba(220, 38, 38, 0.3); color: #fca5a5; }
+
+        /* Objection Accordion */
+        .objection {
+            background: var(--card-light);
+            border-radius: 12px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .objection-header {
+            padding: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #fca5a5;
+        }
+        .objection-header::after {
+            content: "+";
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        .objection.open .objection-header::after {
+            transform: rotate(45deg);
+        }
+        .objection-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .objection.open .objection-body {
+            max-height: 500px;
+        }
+        .objection-body-inner {
+            padding: 0 16px 16px;
+        }
+        .objection-response {
+            background: rgba(5, 150, 105, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: var(--card-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 10px 0;
+        }
+        .faq-item .q {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .faq-item .a {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        .faq-item .a strong {
+            color: var(--text);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .form-group textarea,
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--card-light);
+            border-radius: 12px;
+            background: var(--card-light);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .form-group textarea:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:active {
+            background: var(--primary-dark);
+        }
+
+        /* Tips */
+        .tip {
+            background: rgba(251, 191, 36, 0.15);
+            border-left: 4px solid var(--accent);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.9rem;
+        }
+        .tip strong {
+            color: var(--accent);
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+        }
+        .checklist li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-light);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+        .checklist li::before {
+            content: "✓";
+            color: var(--primary);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Highlight */
+        .highlight {
+            background: rgba(251, 191, 36, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .stat-item {
+            background: var(--card-light);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-item .value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-item .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌞 Emerald Solar</h1>
+        <p>Lead Generator Script Training</p>
+    </div>
+
+    <nav class="nav">
+        <button class="nav-btn active" onclick="showSection('opener')">Opener</button>
+        <button class="nav-btn" onclick="showSection('qualify')">Qualify</button>
+        <button class="nav-btn" onclick="showSection('close')">Close</button>
+        <button class="nav-btn" onclick="showSection('flow')">Flow</button>
+        <button class="nav-btn" onclick="showSection('objections')">Objections</button>
+        <button class="nav-btn" onclick="showSection('faq')">FAQ</button>
+        <button class="nav-btn" onclick="showSection('feedback')">Feedback</button>
+    </nav>
+
+    <!-- OPENER SECTION -->
+    <div id="opener" class="section active">
+        <div class="card">
+            <div class="card-title">🎯 The Opening (10-15 seconds)</div>
+            <p style="color: var(--text-muted); margin-bottom: 12px;">Your opener determines 80% of your success. Be warm, non-threatening, and create curiosity.</p>
+
+            <div class="script-box">
+                <span class="label">Recommended Opener</span>
+                <p>"Hi, I'm <strong>[Your Name]</strong> from Emerald Solar.</p>
+                <p style="margin-top: 8px;"><strong>Don't worry, I'm not here to take your money!</strong></p>
+                <p style="margin-top: 8px;">It's just that I think this house qualifies for <strong>free solar on the roof</strong> - without paying any money out.</p>
+                <p style="margin-top: 8px;">It's with one of the <strong>new schemes</strong>. I just need to check if you qualify..."</p>
+            </div>
+
+            <div class="tip">
+                <strong>💡 Pro Tip:</strong> Say "free solar installation" NOT "free solar panels" - it sounds less salesy and more like a government scheme.
+            </div>
+
+            <div class="card-title" style="margin-top: 20px;">🚫 What NOT to Say</div>
+            <ul class="checklist">
+                <li>"I'm selling solar panels" - sounds like a sales pitch</li>
+                <li>"Can I have 5 minutes of your time?" - they'll say no</li>
+                <li>"Are you the homeowner?" as your first question - too abrupt</li>
+                <li>Mentioning monthly costs upfront - let them get interested first</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="card-title">😊 Body Language & Tone</div>
+            <ul class="checklist">
+                <li><strong>Step back</strong> after knocking - don't crowd the door</li>
+                <li><strong>Smile</strong> - even if nervous, it shows in your voice</li>
+                <li><strong>Hands visible</strong> - don't have them in pockets</li>
+                <li><strong>Clipboard/tablet visible</strong> - shows you're official</li>
+                <li><strong>Relaxed pace</strong> - don't rush, it creates suspicion</li>
+                <li><strong>Eye contact</strong> - but not intense staring</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- QUALIFY SECTION -->
+    <div id="qualify" class="section">
+        <div class="card">
+            <div class="card-title">✅ The 3 Qualifying Questions</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">These questions determine if they're eligible. Ask all three before going further.</p>
+
+            <div class="question-card">
+                <div class="question">
+                    <span class="q-num">1</span>
+                    Do you own this property?
+                </div>
+                <div class="why">
+                    <strong>Why:</strong> Renters cannot sign up - the homeowner must agree. If NO → politely end: "No worries, the scheme is only for homeowners. Have a lovely day!"
+                </div>
+            </div>
+
+            <div class="question-card">
+                <div class="question">
+                    <span class="q-num">2</span>
+                    Is there more than one person over 18 in the household?
+                </div>
+                <div class="why">
+                    <strong>Why:</strong> If there's a partner/spouse, BOTH need to be present when the technical supervisor visits. This is crucial for closing the deal later.
+                </div>
+            </div>
+
+            <div class="question-card">
+                <div class="question">
+                    <span class="q-num">3</span>
+                    How much do you pay for electricity each month?
+                </div>
+                <div class="why">
+                    <strong>Why:</strong> Ideally <strong>£80+/month</strong>. Higher bills = bigger savings = more motivation to sign up. If they don't know exact amount, estimate is fine.
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>💡 If they say "Why do you need to know?"</strong> - Say: "It helps us calculate how much you could save. The scheme works best for homes with higher electricity usage - that's where the biggest savings are."
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📊 Quick Stats to Know</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="value">£100</div>
+                    <div class="label">UK avg monthly electricity</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">£120+</div>
+                    <div class="label">Devon avg (off-gas homes)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">£150-300</div>
+                    <div class="label">Potential monthly savings</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">10+</div>
+                    <div class="label">Panels (min system)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLOSE SECTION -->
+    <div id="close" class="section">
+        <div class="card">
+            <div class="card-title">🎯 Closing for the Appointment</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">After qualifying, your job is to book an appointment for the technical supervisor. This is NOT the final sale.</p>
+
+            <div class="script-box">
+                <span class="label">Transition to Close</span>
+                <p>"Great news - based on what you've told me, you should definitely qualify!</p>
+                <p style="margin-top: 8px;">Our <strong>technical supervisor</strong> is coming round to a few neighbours' houses in the area. I can see if we can <strong>fit you in too</strong>.</p>
+                <p style="margin-top: 8px;">They'll design the system for your roof, show you <strong>exactly how much you'll save</strong>, and go through all the numbers. Takes about 30-45 minutes.</p>
+                <p style="margin-top: 8px;"><strong>Would a morning or afternoon work better for you?</strong>"</p>
+            </div>
+
+            <div class="tip">
+                <strong>💡 Key phrase:</strong> "fitting you in" - makes it sound exclusive and in-demand, not like you're desperately booking appointments.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📝 Information to Collect</div>
+            <div class="question-card">
+                <div class="question">1. Full Name</div>
+                <div class="why">First and last name of the homeowner</div>
+            </div>
+            <div class="question-card">
+                <div class="question">2. Phone Number</div>
+                <div class="why"><strong>Essential</strong> - see objection handling if they resist</div>
+            </div>
+            <div class="question-card">
+                <div class="question">3. Full Address</div>
+                <div class="why">Including postcode for system design</div>
+            </div>
+            <div class="question-card">
+                <div class="question">4. Best Day & Time</div>
+                <div class="why"><strong>Both partners must be home</strong> - emphasize this!</div>
+            </div>
+            <div class="question-card">
+                <div class="question">5. Electricity Bill (estimate OK)</div>
+                <div class="why">Monthly amount, or ask them to have a bill ready</div>
+            </div>
+
+            <div class="script-box" style="background: var(--card-light); border-color: var(--danger);">
+                <span class="label" style="color: var(--danger);">Critical: Both Partners</span>
+                <p>"Just to check - you mentioned there are two of you. <strong>It's really important that both of you are there</strong> when our supervisor visits. They'll need to go through the numbers with both of you to make sure everyone's happy. What time works when you're <strong>both home</strong>?"</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">✅ Final Confirmation</div>
+            <div class="script-box">
+                <p>"Perfect! So I've got you down for <strong>[Day] at [Time]</strong>.</p>
+                <p style="margin-top: 8px;">Our supervisor will call you the day before to confirm. If anything changes, just give us a ring on this number [point to card].</p>
+                <p style="margin-top: 8px;">If you could have a <strong>recent electricity bill handy</strong>, that really helps them calculate your savings accurately.</p>
+                <p style="margin-top: 8px;">Any questions before I go?"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOW SECTION -->
+    <div id="flow" class="section">
+        <div class="card">
+            <div class="card-title">🔄 Conversation Flow</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Follow this path. Green = continue, Red = exit gracefully.</p>
+
+            <div class="flow-step success">
+                <div class="step-title">1. KNOCK & OPENER</div>
+                <p>"Hi, I'm [Name] from Emerald Solar. Don't worry, I'm not here to take your money..."</p>
+                <div class="responses">
+                    <span class="response yes">→ They listen</span>
+                    <span class="response no">Door slam → Move on</span>
+                </div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">2. CREATE CURIOSITY</div>
+                <p>"This house might qualify for free solar. I just need to check a few things..."</p>
+                <div class="responses">
+                    <span class="response yes">→ They're interested</span>
+                    <span class="response no">"Not interested" → Try soft objection handle</span>
+                </div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">3. Q1: OWNERSHIP</div>
+                <p>"Do you own this property?"</p>
+                <div class="responses">
+                    <span class="response yes">YES → Continue</span>
+                    <span class="response no">NO (renter) → "Sorry, homeowners only. Lovely day!"</span>
+                </div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">4. Q2: HOUSEHOLD</div>
+                <p>"Is there more than one adult in the household?"</p>
+                <div class="responses">
+                    <span class="response yes">YES → Note: both must be at appointment</span>
+                    <span class="response yes">NO (single) → Still continue</span>
+                </div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">5. Q3: ELECTRICITY BILL</div>
+                <p>"How much roughly do you pay for electricity?"</p>
+                <div class="responses">
+                    <span class="response yes">£80+/month → Great candidate!</span>
+                    <span class="response yes">£50-80 → Still worth it</span>
+                    <span class="response no">&lt;£50 → May not qualify, be honest</span>
+                </div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">6. TRANSITION TO CLOSE</div>
+                <p>"Great news, you should qualify! Our technical supervisor is seeing neighbours..."</p>
+                <div class="responses">
+                    <span class="response yes">→ Book appointment</span>
+                    <span class="response no">"Let me think" → Handle objection</span>
+                </div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">7. COLLECT DETAILS</div>
+                <p>Name, Phone, Address, Best time (both partners home)</p>
+                <div class="responses">
+                    <span class="response yes">All details → Confirm & leave</span>
+                    <span class="response no">Won't give phone → See objection handling</span>
+                </div>
+            </div>
+
+            <div class="flow-step" style="background: var(--primary); border: none;">
+                <div class="step-title" style="color: white;">✅ APPOINTMENT BOOKED!</div>
+                <p style="color: rgba(255,255,255,0.9);">Confirm details, leave card, thank them, move to next door.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- OBJECTIONS SECTION -->
+    <div id="objections" class="section">
+        <div class="card">
+            <div class="card-title">💬 Handling Objections</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Tap each objection to see the recommended response.</p>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"I'm not interested"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <p style="color: var(--text-muted); margin-bottom: 8px;">This is usually a reflex. Don't give up immediately.</p>
+                        <div class="objection-response">
+                            "No problem at all - I completely understand. Just out of curiosity, is that because you've looked into solar before, or...?"
+                            <br><br>
+                            <em>This often reveals the real objection (cost, hassle, bad experience, etc.) which you can then address.</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"We're eating dinner" / "Bad time"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "So sorry to disturb you! I'll be super quick - literally 30 seconds. Do you own the property? [If yes] And you're on electric/oil heating? [If yes] Perfect - you could save £200+ a month. Can I call you tomorrow to explain properly?"
+                            <br><br>
+                            <em>Get their number for a callback - still counts as a lead!</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"What's the catch?"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "Fair question! Here's how it works: Hometree Finance pays for everything upfront - the panels, batteries, installation. You pay a fixed monthly amount that goes up just 2.5% a year - less than inflation. The system is fully maintained, any repairs are free. Your savings should be more than the monthly cost. Our technical supervisor will show you the exact numbers for your house."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"I need to speak to my partner"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "Absolutely - that's exactly why we need both of you there when our supervisor visits. They'll go through everything together with both of you. What time are you both usually home?"
+                            <br><br>
+                            <em>Turn this into an advantage - use it to book when both are in!</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"I don't want to give my phone number"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <p style="color: var(--text-muted); margin-bottom: 8px;"><strong>This is common. Follow these steps:</strong></p>
+                        <div class="objection-response">
+                            <strong>Step 1 - Understand why:</strong><br>
+                            "I completely understand - can I ask what's making you hesitant?"
+                            <br><br>
+                            <strong>Step 2 - Re-explain the process:</strong><br>
+                            "The number is just so our supervisor can confirm the appointment time. They won't call to sell you anything - you've already expressed interest, they just need to confirm and ask if you have any questions beforehand."
+                            <br><br>
+                            <strong>Step 3 - It's required:</strong><br>
+                            "Unfortunately the system won't let me submit the form without a contact number. It's just for appointment confirmation."
+                            <br><br>
+                            <strong>Step 4 - Final attempt:</strong><br>
+                            "If you'd prefer, you could call our office directly - but they'll just ask the same questions I have. It's much easier if I complete it now while we're talking."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"I've already got solar panels"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "Oh great! Do you have a battery system as well? [If no] That's actually where a lot of savings come from now - storing energy to use in the evening when rates are highest, and selling back to the grid. We might be able to add batteries to your existing setup. Would that be worth looking into?"
+                            <br><br>
+                            <em>If they have both, ask: "Know any neighbours who might be interested? We're fitting a few houses in this area."</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"I'm too old for a 25-year lease"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "I hear that a lot, and it's a fair point. But here's the thing - the lease transfers with the property if you ever sell. It's actually a selling point because buyers inherit a lower electricity bill! And you start saving from day one. Our supervisor can show you exactly what the first year looks like."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"Send me some information"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "I can definitely leave a card, but honestly the information is all specific to your house - your roof, your usage, your savings. That's why our supervisor does a free home visit. It's much better than generic brochures. They can answer all your questions in person. What day works for you?"
+                            <br><br>
+                            <em>Don't let them fob you off with "send info" - push gently for the appointment.</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="objection" onclick="toggleObjection(this)">
+                <div class="objection-header">"I rent this property"</div>
+                <div class="objection-body">
+                    <div class="objection-body-inner">
+                        <div class="objection-response">
+                            "Ah no problem - the scheme is just for homeowners. Do you happen to know if any of your neighbours own their places? Or do you have contact details for your landlord? They might be interested."
+                            <br><br>
+                            <em>Always try to get a referral or landlord contact!</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div id="faq" class="section">
+        <div class="card">
+            <div class="card-title">❓ Frequently Asked Questions</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Common questions from trainees and customers.</p>
+
+            <div class="faq-item">
+                <div class="q">What's the average electricity consumption in the UK?</div>
+                <div class="a">UK average is about <strong>2,700 kWh/year</strong> or roughly <strong>£90-100/month</strong> at current rates. Devon rural areas are often higher (£100-150/month) due to electric heating in off-gas homes.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">How much electricity does a solar panel generate?</div>
+                <div class="a">Each <strong>455W Jinko panel</strong> generates roughly <strong>400-450 kWh/year</strong> in the UK. A standard 10-panel system produces about <strong>4,000-4,500 kWh/year</strong> - enough to cover most of an average home's usage.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">How much can the battery store?</div>
+                <div class="a">Standard setup has <strong>2x 5.8kWh batteries = 11.6kWh total</strong>. This can power an average home for about <strong>half a day to a full day</strong> depending on usage. It's designed to store daytime solar for evening use.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">Can the battery last a whole year?</div>
+                <div class="a">No - batteries store daily/weekly energy, not annual. They're charged daily by solar panels and discharged in the evening. Annual consumption is <strong>~2,700kWh</strong>, battery stores <strong>~12kWh</strong> - it cycles daily.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">What does the monthly lease cost?</div>
+                <div class="a">Typically <strong>£80-150/month</strong> depending on system size. This is fixed and only rises <strong>2.5%/year</strong> (less than inflation). The savings from reduced bills + selling energy back should exceed this cost.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">How is it subsidized? When did the scheme start?</div>
+                <div class="a">It's not a government subsidy - it's a <strong>Hometree Finance lease model</strong>. They pay for installation, homeowner pays monthly. The "free" part means <strong>no upfront cost</strong>. Smart Export Guarantee (SEG) pays for energy exported to grid. Schemes like this became popular from <strong>2020 onwards</strong>.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">What are Levelise and Snugg?</div>
+                <div class="a"><strong>Levelise:</strong> Optimizes when to use/store/sell energy for maximum savings. <strong>Snugg:</strong> Carbon credit scheme - homeowners get paid for the carbon they offset. Both are <strong>free extras</strong> that increase overall savings.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">What if something breaks?</div>
+                <div class="a"><strong>Everything is covered</strong> - panels, batteries, inverter, installation issues. No call-out charges, no parts costs, no labour costs. Full maintenance for the <strong>entire 25 years</strong>. Zero risk to the homeowner.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="q">What's a G98 vs G99?</div>
+                <div class="a"><strong>G98:</strong> Notification for systems <strong>under 3.68kW</strong> (typically under 14 panels) - quick approval. <strong>G99:</strong> Application for larger systems - can take <strong>up to 45 days</strong> for approval. Most residential systems are G98.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK SECTION -->
+    <div id="feedback" class="section">
+        <div class="card">
+            <div class="card-title">💬 Submit Feedback or Questions</div>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Have a question? Had a tricky conversation? Share it here and we'll add guidance.</p>
+
+            <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="feedbackName" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="feedbackType" style="width:100%;padding:14px;border:2px solid var(--card-light);border-radius:12px;background:var(--card-light);color:var(--text);font-size:1rem;">
+                        <option value="question">Question about the role</option>
+                        <option value="conversation">Conversation I had</option>
+                        <option value="objection">New objection I heard</option>
+                        <option value="suggestion">Suggestion for scripts</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Your Message</label>
+                    <textarea id="feedbackMessage" rows="5" placeholder="Describe your question, the conversation you had, or your suggestion..." required></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Feedback</button>
+            </form>
+
+            <div id="feedbackConfirm" style="display:none;text-align:center;padding:20px;background:rgba(5,150,105,0.2);border-radius:12px;margin-top:16px;">
+                <p style="font-size:1.1rem;">✅ Thanks! Your feedback has been recorded.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📋 Recent Submissions</div>
+            <div id="feedbackList">
+                <div class="faq-item">
+                    <div class="q">[Trainee Question] Average electricity consumption per month in the UK?</div>
+                    <div class="a">→ See FAQ section above for answer</div>
+                </div>
+                <div class="faq-item">
+                    <div class="q">[Trainee Question] How is it subsidized and when did the scheme start?</div>
+                    <div class="a">→ See FAQ section above for answer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Objection accordion
+        function toggleObjection(el) {
+            el.classList.toggle('open');
+        }
+
+        // Feedback form
+        function submitFeedback(e) {
+            e.preventDefault();
+            const name = document.getElementById('feedbackName').value;
+            const type = document.getElementById('feedbackType').value;
+            const message = document.getElementById('feedbackMessage').value;
+
+            // Store in localStorage
+            const feedback = JSON.parse(localStorage.getItem('scriptFeedback') || '[]');
+            feedback.push({
+                name,
+                type,
+                message,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('scriptFeedback', JSON.stringify(feedback));
+
+            // Show confirmation
+            document.getElementById('feedbackConfirm').style.display = 'block';
+            document.getElementById('feedbackForm').reset();
+
+            // Update list
+            updateFeedbackList();
+
+            setTimeout(() => {
+                document.getElementById('feedbackConfirm').style.display = 'none';
+            }, 3000);
+        }
+
+        function updateFeedbackList() {
+            const feedback = JSON.parse(localStorage.getItem('scriptFeedback') || '[]');
+            const list = document.getElementById('feedbackList');
+
+            if (feedback.length > 0) {
+                const recent = feedback.slice(-5).reverse();
+                const existingItems = list.innerHTML;
+                let newItems = recent.map(f => `
+                    <div class="faq-item">
+                        <div class="q">[${f.type}] ${f.name}: ${f.message.substring(0, 100)}${f.message.length > 100 ? '...' : ''}</div>
+                        <div class="a" style="font-size:0.8rem;">Submitted: ${new Date(f.date).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+                list.innerHTML = newItems + existingItems;
+            }
+        }
+
+        // Load existing feedback on page load
+        updateFeedbackList();
+    </script>
+</body>
+</html>

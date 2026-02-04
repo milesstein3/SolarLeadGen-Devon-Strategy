@@ -6,6 +6,14 @@ Interactive dashboard and field strategy guide for solar panel lead generation c
 
 **View the dashboard:** [https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/)
 
+### Quick Links
+
+| Resource | Description |
+|----------|-------------|
+| [📊 Main Dashboard](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/) | Interactive maps, charts, full strategy guide |
+| [📱 Script Training](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/script-training.html) | Mobile-optimized training for lead generators |
+| [🌙 Evening Session](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/okehampton-evening-session.html) | 2-hour Okehampton town centre strategy |
+
 ## Overview
 
 This project provides a comprehensive field strategy for a 4-person door-knocking team targeting Okehampton, Devon (EX20) and surrounding areas for Hometree Finance 25-year hybrid solar + battery lease sign-ups.
@@ -31,10 +39,11 @@ This project provides a comprehensive field strategy for a 4-person door-knockin
 
 | File | Description |
 |------|-------------|
-| `index.html` | Main interactive dashboard (open in browser) |
+| `index.html` | Main interactive dashboard |
+| `script-training.html` | Mobile-optimized script training for lead generators |
+| `okehampton-evening-session.html` | 2-hour evening session strategy |
 | `field_strategy_guide.md` | Full strategy guide in Markdown |
 | `devon_electricity.csv` | Devon postcode electricity data extract |
-| `requirements.txt` | Original project requirements |
 
 ## Quick Start
 
