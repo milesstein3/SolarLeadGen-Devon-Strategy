@@ -539,7 +539,7 @@
             meters: d[4],
             ward: d[5],
             lsoa: d[6],
-            sector: d[0].replace(/\s*\d[A-Z]{2}$/i, '').trim()
+            sector: d[0].replace(/[A-Z]{2}$/i, '').trim()
         }));
 
         sectors = raw.s.map(d => ({
