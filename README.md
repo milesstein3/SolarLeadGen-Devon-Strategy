@@ -13,6 +13,7 @@ Interactive dashboard and field strategy guide for solar panel lead generation c
 | [📊 Main Dashboard](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/) | Interactive maps, charts, full strategy guide |
 | [📱 Script Training](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/script-training.html) | Mobile-optimized training for lead generators |
 | [🌙 Evening Session](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/okehampton-evening-session.html) | 2-hour Okehampton town centre strategy |
+| [🗺️ Solihull Map](https://milesstein3.github.io/SolarLeadGen-Devon-Strategy/solihull-map.html) | Interactive postcode electricity consumption map for B90-B94 |
 
 ## Overview
 
@@ -44,6 +45,8 @@ This project provides a comprehensive field strategy for a 4-person door-knockin
 | `okehampton-evening-session.html` | 2-hour evening session strategy |
 | `field_strategy_guide.md` | Full strategy guide in Markdown |
 | `devon_electricity.csv` | Devon postcode electricity data extract |
+| `solihull-map.html` | Interactive Solihull postcode map (B90-B94) |
+| `solihull_compact.json` | Solihull postcode electricity + coordinate data |
 
 ## Quick Start
 

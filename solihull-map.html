@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solihull Solar Opportunity Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/d3-delaunay@6.0.4/dist/d3-delaunay.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; }
+
+        #app { display: flex; height: 100vh; }
+
+        /* Sidebar */
+        #sidebar {
+            width: 360px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        #sidebar-header {
+            padding: 16px 20px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        #sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f59e0b;
+            margin-bottom: 4px;
+        }
+
+        #sidebar-header p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Controls */
+        #controls {
+            padding: 12px 20px;
+            border-bottom: 1px solid #334155;
+            background: #1e293b;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group:last-child { margin-bottom: 0; }
+
+        .control-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .toggle-group {
+            display: flex;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #475569;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: #334155;
+            color: #94a3b8;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .toggle-btn.active {
+            background: #f59e0b;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background: #475569;
+        }
+
+        /* Legend */
+        #legend {
+            padding: 12px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .legend-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        /* Sector table */
+        #sector-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 20px;
+        }
+
+        .sector-table-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .sector-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .sector-row:hover {
+            background: #334155;
+        }
+
+        .sector-row.highlighted {
+            background: #334155;
+            border: 1px solid #f59e0b;
+        }
+
+        .sector-rank {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .sector-rank.top3 { background: #f59e0b; color: #0f172a; }
+
+        .sector-info { flex: 1; }
+
+        .sector-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .sector-meters {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .sector-kwh {
+            font-size: 14px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .sector-kwh-label {
+            font-size: 10px;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        /* Detail panel */
+        #detail-panel {
+            display: none;
+            padding: 16px 20px;
+            border-top: 1px solid #334155;
+            background: #0f172a;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        #detail-panel.visible { display: block; }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .detail-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+
+        .detail-close {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: #334155;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .detail-card {
+            background: #1e293b;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .detail-card-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-card-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-top: 2px;
+        }
+
+        .detail-card-value.highlight { color: #f59e0b; }
+
+        .detail-card-sub {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .consumption-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: #334155;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .consumption-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* Map */
+        #map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map { height: 100%; width: 100%; }
+
+        /* Stats bar */
+        #stats-bar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+        }
+
+        .stat-chip {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid #334155;
+        }
+
+        .stat-chip strong {
+            color: #f59e0b;
+        }
+
+        /* Search */
+        #search-box {
+            padding: 8px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #334155;
+            color: #f1f5f9;
+            font-size: 13px;
+            outline: none;
+        }
+
+        #search-input::placeholder { color: #64748b; }
+        #search-input:focus { border-color: #f59e0b; }
+
+        #search-results {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .search-result {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .search-result:hover { background: #334155; }
+
+        /* Custom popup */
+        .leaflet-popup-content-wrapper {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .leaflet-popup-tip { background: #1e293b; }
+
+        .leaflet-popup-content {
+            margin: 12px 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .popup-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f59e0b;
+            margin-bottom: 8px;
+        }
+
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .popup-row:last-child { border-bottom: none; }
+        .popup-label { color: #94a3b8; }
+        .popup-value { font-weight: 600; }
+        .popup-value.high { color: #ef4444; }
+        .popup-value.medium { color: #f59e0b; }
+        .popup-value.low { color: #22c55e; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #app { flex-direction: column; }
+            #sidebar {
+                width: 100%;
+                height: 45vh;
+                order: 2;
+            }
+            #map-container {
+                height: 55vh;
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <h1>Solihull Solar Map</h1>
+                <p>Electricity consumption by postcode | B90-B94</p>
+            </div>
+
+            <div id="controls">
+                <div class="control-group">
+                    <div class="control-label">View Mode</div>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" data-mode="postcode" onclick="setViewMode('postcode')">Postcodes</button>
+                        <button class="toggle-btn" data-mode="sector" onclick="setViewMode('sector')">Sectors</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Overlay</div>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" data-overlay="consumption" onclick="setOverlay('consumption')">Consumption</button>
+                        <button class="toggle-btn" data-overlay="meters" onclick="setOverlay('meters')">Meters</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="search-box">
+                <input type="text" id="search-input" placeholder="Search postcode or ward..." />
+                <div id="search-results"></div>
+            </div>
+
+            <div id="legend">
+                <div class="legend-title">Electricity Consumption (kWh/year)</div>
+                <div class="legend-items" id="legend-items"></div>
+            </div>
+
+            <div id="sector-list"></div>
+
+            <div id="detail-panel">
+                <div class="detail-header">
+                    <div class="detail-title" id="detail-title"></div>
+                    <button class="detail-close" onclick="closeDetail()">&times;</button>
+                </div>
+                <div class="detail-grid" id="detail-grid"></div>
+            </div>
+        </div>
+
+        <div id="map-container">
+            <div id="map"></div>
+            <div id="stats-bar">
+                <div class="stat-chip"><strong>2,787</strong> postcodes</div>
+                <div class="stat-chip">Avg <strong>4,034</strong> kWh/yr</div>
+                <div class="stat-chip"><strong>72.2%</strong> owner-occupied</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // DATA WILL BE LOADED FROM EXTERNAL FILE
+    let DATA = null;
+
+    // Color bands for electricity consumption
+    const BANDS = [
+        { min: 0, max: 2000, color: '#22c55e', label: '< 2,000' },
+        { min: 2000, max: 3000, color: '#84cc16', label: '2,000 - 3,000' },
+        { min: 3000, max: 5000, color: '#f59e0b', label: '3,000 - 5,000' },
+        { min: 5000, max: 7000, color: '#f97316', label: '5,000 - 7,000' },
+        { min: 7000, max: 10000, color: '#ef4444', label: '7,000 - 10,000' },
+        { min: 10000, max: Infinity, color: '#991b1b', label: '> 10,000' }
+    ];
+
+    // Meter count bands
+    const METER_BANDS = [
+        { min: 0, max: 10, color: '#22c55e', label: '< 10' },
+        { min: 10, max: 30, color: '#84cc16', label: '10 - 30' },
+        { min: 30, max: 60, color: '#f59e0b', label: '30 - 60' },
+        { min: 60, max: 100, color: '#f97316', label: '60 - 100' },
+        { min: 100, max: 200, color: '#ef4444', label: '100 - 200' },
+        { min: 200, max: Infinity, color: '#991b1b', label: '> 200' }
+    ];
+
+    // Owner-occupancy by ward (Solihull Council Ward Profiles 2024, Census 2021)
+    const WARD_OWNERSHIP = {
+        'Bickenhill': 68, 'Blythe': 78, 'Dorridge and Hockley Heath': 86,
+        'Elmdon': 71, 'Knowle': 84, 'Lyndon': 65, 'Meriden': 81,
+        'Olton': 76, 'Shirley East': 72, 'Shirley South': 79,
+        'Shirley West': 77, 'Silhill': 76, 'St Alphege': 75,
+        'Tanworth-in-Arden': 84, 'Wythall East': 79,
+        'Kenilworth Abbey & Arden': 80, 'Sheldon': 58,
+        'Castle Bromwich': 83
+    };
+
+    let map, postcodeLayer, sectorLayer;
+    let currentMode = 'postcode';
+    let currentOverlay = 'consumption';
+    let postcodes = [];
+    let sectors = [];
+
+    function getColor(value, overlay) {
+        const bands = overlay === 'meters' ? METER_BANDS : BANDS;
+        for (const band of bands) {
+            if (value >= band.min && value < band.max) return band.color;
+        }
+        return bands[bands.length - 1].color;
+    }
+
+    function getConsumptionClass(kwh) {
+        if (kwh >= 5000) return 'high';
+        if (kwh >= 3000) return 'medium';
+        return 'low';
+    }
+
+    function initMap() {
+        map = L.map('map', {
+            center: [52.41, -1.80],
+            zoom: 12,
+            zoomControl: true
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            maxZoom: 19
+        }).addTo(map);
+    }
+
+    function parseData(raw) {
+        postcodes = raw.p.map(d => ({
+            postcode: d[0],
+            lat: d[1],
+            lng: d[2],
+            mean_kwh: d[3],
+            meters: d[4],
+            ward: d[5],
+            lsoa: d[6],
+            sector: d[0].replace(/\s*\d[A-Z]{2}$/i, '').trim()
+        }));
+
+        sectors = raw.s.map(d => ({
+            name: d[0],
+            lat: d[1],
+            lng: d[2],
+            mean_kwh: d[3],
+            meters: d[4]
+        })).sort((a, b) => b.mean_kwh - a.mean_kwh);
+    }
+
+    function buildVoronoi(points, bounds) {
+        // Project to simple x,y using Mercator-like scaling
+        const centerLat = 52.41;
+        const cosLat = Math.cos(centerLat * Math.PI / 180);
+
+        const coords = points.map(p => [
+            (p.lng + 2) * cosLat * 111320, // approximate meters
+            (p.lat - 52) * 110540
+        ]);
+
+        const delaunay = d3.Delaunay.from(coords);
+
+        // Bounding box in projected coordinates
+        const bx0 = (bounds.west + 2) * cosLat * 111320;
+        const by0 = (bounds.south - 52) * 110540;
+        const bx1 = (bounds.east + 2) * cosLat * 111320;
+        const by1 = (bounds.north - 52) * 110540;
+
+        const voronoi = delaunay.voronoi([bx0, by0, bx1, by1]);
+
+        // Convert back to lat/lng polygons
+        const polygons = [];
+        for (let i = 0; i < points.length; i++) {
+            const cell = voronoi.cellPolygon(i);
+            if (cell) {
+                const latlngs = cell.map(([x, y]) => [
+                    y / 110540 + 52,
+                    x / (cosLat * 111320) - 2
+                ]);
+                polygons.push(latlngs);
+            } else {
+                polygons.push(null);
+            }
+        }
+        return polygons;
+    }
+
+    function drawPostcodes() {
+        if (postcodeLayer) {
+            map.removeLayer(postcodeLayer);
+        }
+
+        const bounds = {
+            north: 52.50, south: 52.30,
+            east: -1.60, west: -1.95
+        };
+
+        const polygons = buildVoronoi(postcodes, bounds);
+
+        const features = [];
+        postcodes.forEach((pc, i) => {
+            if (!polygons[i]) return;
+
+            const value = currentOverlay === 'meters' ? pc.meters : pc.mean_kwh;
+            const color = getColor(value, currentOverlay);
+            const ownership = WARD_OWNERSHIP[pc.ward] || 72;
+
+            const coords = polygons[i].map(([lat, lng]) => [lng, lat]);
+
+            features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [coords]
+                },
+                properties: {
+                    postcode: pc.postcode,
+                    mean_kwh: pc.mean_kwh,
+                    meters: pc.meters,
+                    ward: pc.ward,
+                    lsoa: pc.lsoa,
+                    sector: pc.sector,
+                    ownership: ownership,
+                    color: color
+                }
+            });
+        });
+
+        postcodeLayer = L.geoJSON({
+            type: 'FeatureCollection',
+            features: features
+        }, {
+            style: function(feature) {
+                return {
+                    fillColor: feature.properties.color,
+                    fillOpacity: 0.65,
+                    weight: 0.5,
+                    color: '#475569',
+                    opacity: 0.4
+                };
+            },
+            onEachFeature: function(feature, layer) {
+                const p = feature.properties;
+                const cls = getConsumptionClass(p.mean_kwh);
+
+                const annualCost = Math.round(p.mean_kwh * 0.245);
+                const monthlyCost = Math.round(annualCost / 12);
+                const solarSaving = Math.round(annualCost * 0.6);
+
+                layer.bindPopup(`
+                    <div class="popup-title">${p.postcode}</div>
+                    <div class="popup-row"><span class="popup-label">Mean consumption</span><span class="popup-value ${cls}">${p.mean_kwh.toLocaleString()} kWh/yr</span></div>
+                    <div class="popup-row"><span class="popup-label">Est. annual cost</span><span class="popup-value">&pound;${annualCost.toLocaleString()}</span></div>
+                    <div class="popup-row"><span class="popup-label">Est. monthly cost</span><span class="popup-value">&pound;${monthlyCost}</span></div>
+                    <div class="popup-row"><span class="popup-label">Est. solar saving</span><span class="popup-value" style="color:#22c55e">&pound;${solarSaving.toLocaleString()}/yr</span></div>
+                    <div class="popup-row"><span class="popup-label">Meters</span><span class="popup-value">${p.meters}</span></div>
+                    <div class="popup-row"><span class="popup-label">Ward</span><span class="popup-value">${p.ward}</span></div>
+                    <div class="popup-row"><span class="popup-label">LSOA</span><span class="popup-value">${p.lsoa}</span></div>
+                    <div class="popup-row"><span class="popup-label">Owner-occupied (est.)</span><span class="popup-value">${p.ownership}%</span></div>
+                    <div class="popup-row"><span class="popup-label">Sector</span><span class="popup-value">${p.sector}</span></div>
+                `, { maxWidth: 280 });
+
+                layer.on('mouseover', function() {
+                    this.setStyle({ weight: 2, color: '#f59e0b', fillOpacity: 0.85 });
+                    this.bringToFront();
+                });
+                layer.on('mouseout', function() {
+                    this.setStyle({ weight: 0.5, color: '#475569', fillOpacity: 0.65 });
+                });
+            }
+        });
+
+        if (currentMode === 'postcode') {
+            postcodeLayer.addTo(map);
+        }
+    }
+
+    function drawSectors() {
+        if (sectorLayer) {
+            map.removeLayer(sectorLayer);
+        }
+
+        // Group postcodes by sector
+        const sectorGroups = {};
+        postcodes.forEach(pc => {
+            if (!sectorGroups[pc.sector]) sectorGroups[pc.sector] = [];
+            sectorGroups[pc.sector].push(pc);
+        });
+
+        sectorLayer = L.layerGroup();
+
+        Object.entries(sectorGroups).forEach(([sectorName, pcs]) => {
+            if (pcs.length < 3) return;
+
+            // Build Voronoi for this sector's postcodes, then take convex hull
+            const sectorData = sectors.find(s => s.name === sectorName);
+            if (!sectorData) return;
+
+            const value = currentOverlay === 'meters' ? sectorData.meters : sectorData.mean_kwh;
+            const color = getColor(value, currentOverlay);
+
+            // Compute convex hull of postcode points
+            const hull = convexHull(pcs.map(p => [p.lat, p.lng]));
+
+            // Expand hull slightly for visual padding
+            const centerLat = sectorData.lat;
+            const centerLng = sectorData.lng;
+            const expandedHull = hull.map(([lat, lng]) => {
+                const dlat = lat - centerLat;
+                const dlng = lng - centerLng;
+                return [centerLat + dlat * 1.05, centerLng + dlng * 1.05];
+            });
+
+            const polygon = L.polygon(expandedHull, {
+                fillColor: color,
+                fillOpacity: 0.5,
+                weight: 2,
+                color: '#f1f5f9',
+                opacity: 0.7
+            });
+
+            const cls = getConsumptionClass(sectorData.mean_kwh);
+            const annualCost = Math.round(sectorData.mean_kwh * 0.245);
+            const solarSaving = Math.round(annualCost * 0.6);
+
+            polygon.bindPopup(`
+                <div class="popup-title">Sector ${sectorName}</div>
+                <div class="popup-row"><span class="popup-label">Mean consumption</span><span class="popup-value ${cls}">${sectorData.mean_kwh.toLocaleString()} kWh/yr</span></div>
+                <div class="popup-row"><span class="popup-label">Est. annual cost</span><span class="popup-value">&pound;${annualCost.toLocaleString()}</span></div>
+                <div class="popup-row"><span class="popup-label">Est. solar saving</span><span class="popup-value" style="color:#22c55e">&pound;${solarSaving.toLocaleString()}/yr</span></div>
+                <div class="popup-row"><span class="popup-label">Total meters</span><span class="popup-value">${sectorData.meters.toLocaleString()}</span></div>
+                <div class="popup-row"><span class="popup-label">Postcodes</span><span class="popup-value">${pcs.length}</span></div>
+            `, { maxWidth: 280 });
+
+            polygon.on('mouseover', function() {
+                this.setStyle({ weight: 3, color: '#f59e0b', fillOpacity: 0.75 });
+                this.bringToFront();
+            });
+            polygon.on('mouseout', function() {
+                this.setStyle({ weight: 2, color: '#f1f5f9', fillOpacity: 0.5 });
+            });
+
+            // Add sector label
+            const label = L.marker([sectorData.lat, sectorData.lng], {
+                icon: L.divIcon({
+                    className: 'sector-label',
+                    html: `<div style="
+                        background: rgba(15,23,42,0.85);
+                        color: #f1f5f9;
+                        padding: 3px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        border: 1px solid #475569;
+                        text-align: center;
+                    ">${sectorName}<br><span style="color:#f59e0b;font-size:11px">${sectorData.mean_kwh.toLocaleString()} kWh</span></div>`,
+                    iconSize: [80, 40],
+                    iconAnchor: [40, 20]
+                })
+            });
+
+            sectorLayer.addLayer(polygon);
+            sectorLayer.addLayer(label);
+        });
+
+        if (currentMode === 'sector') {
+            sectorLayer.addTo(map);
+        }
+    }
+
+    function convexHull(points) {
+        if (points.length < 3) return points;
+
+        // Graham scan
+        points = [...points];
+
+        // Find lowest point
+        let lowest = 0;
+        for (let i = 1; i < points.length; i++) {
+            if (points[i][0] < points[lowest][0] ||
+                (points[i][0] === points[lowest][0] && points[i][1] < points[lowest][1])) {
+                lowest = i;
+            }
+        }
+        [points[0], points[lowest]] = [points[lowest], points[0]];
+        const pivot = points[0];
+
+        points.sort((a, b) => {
+            if (a === pivot) return -1;
+            if (b === pivot) return 1;
+            const angleA = Math.atan2(a[1] - pivot[1], a[0] - pivot[0]);
+            const angleB = Math.atan2(b[1] - pivot[1], b[0] - pivot[0]);
+            return angleA - angleB;
+        });
+
+        const stack = [points[0], points[1]];
+        for (let i = 2; i < points.length; i++) {
+            while (stack.length > 1) {
+                const a = stack[stack.length - 2];
+                const b = stack[stack.length - 1];
+                const c = points[i];
+                const cross = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+                if (cross <= 0) stack.pop();
+                else break;
+            }
+            stack.push(points[i]);
+        }
+        return stack;
+    }
+
+    function setViewMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('[data-mode]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+
+        if (mode === 'postcode') {
+            if (sectorLayer) map.removeLayer(sectorLayer);
+            if (postcodeLayer) postcodeLayer.addTo(map);
+        } else {
+            if (postcodeLayer) map.removeLayer(postcodeLayer);
+            if (sectorLayer) sectorLayer.addTo(map);
+        }
+    }
+
+    function setOverlay(overlay) {
+        currentOverlay = overlay;
+        document.querySelectorAll('[data-overlay]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.overlay === overlay);
+        });
+        updateLegend();
+        drawPostcodes();
+        drawSectors();
+        setViewMode(currentMode);
+    }
+
+    function updateLegend() {
+        const bands = currentOverlay === 'meters' ? METER_BANDS : BANDS;
+        const unit = currentOverlay === 'meters' ? ' meters' : ' kWh';
+        const container = document.getElementById('legend-items');
+        container.innerHTML = bands.map(b => `
+            <div class="legend-item">
+                <div class="legend-color" style="background:${b.color}"></div>
+                <span>${b.label}</span>
+            </div>
+        `).join('');
+
+        document.querySelector('.legend-title').textContent =
+            currentOverlay === 'meters' ? 'Meter Count' : 'Electricity Consumption (kWh/year)';
+    }
+
+    function buildSectorList() {
+        const container = document.getElementById('sector-list');
+        let html = '<div class="sector-table-title">Sectors ranked by consumption</div>';
+
+        sectors.forEach((s, i) => {
+            const color = getColor(s.mean_kwh, 'consumption');
+            html += `
+                <div class="sector-row" onclick="focusSector('${s.name}')" data-sector="${s.name}">
+                    <div class="sector-rank ${i < 3 ? 'top3' : ''}">${i + 1}</div>
+                    <div class="sector-info">
+                        <div class="sector-name">${s.name}</div>
+                        <div class="sector-meters">${s.meters.toLocaleString()} meters</div>
+                    </div>
+                    <div>
+                        <div class="sector-kwh" style="color:${color}">${s.mean_kwh.toLocaleString()}</div>
+                        <div class="sector-kwh-label">kWh/yr</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function focusSector(name) {
+        const s = sectors.find(s => s.name === name);
+        if (!s) return;
+
+        map.setView([s.lat, s.lng], 14);
+
+        // Highlight in sidebar
+        document.querySelectorAll('.sector-row').forEach(row => {
+            row.classList.toggle('highlighted', row.dataset.sector === name);
+        });
+
+        // Show detail
+        showSectorDetail(s);
+    }
+
+    function showSectorDetail(s) {
+        const panel = document.getElementById('detail-panel');
+        const title = document.getElementById('detail-title');
+        const grid = document.getElementById('detail-grid');
+
+        // Find postcodes in this sector
+        const sectorPcs = postcodes.filter(p => p.sector === s.name);
+        const maxKwh = Math.max(...sectorPcs.map(p => p.mean_kwh));
+        const minKwh = Math.min(...sectorPcs.map(p => p.mean_kwh));
+        const totalHomes = sectorPcs.reduce((sum, p) => sum + p.meters, 0);
+        const annualCost = Math.round(s.mean_kwh * 0.245);
+        const solarSaving = Math.round(annualCost * 0.6);
+
+        // Find primary ward
+        const wardCounts = {};
+        sectorPcs.forEach(p => {
+            wardCounts[p.ward] = (wardCounts[p.ward] || 0) + 1;
+        });
+        const primaryWard = Object.entries(wardCounts).sort((a,b) => b[1]-a[1])[0]?.[0] || '';
+        const ownership = WARD_OWNERSHIP[primaryWard] || 72;
+
+        title.textContent = `Sector ${s.name}`;
+
+        const barWidth = Math.min(100, (s.mean_kwh / 7000) * 100);
+        const barColor = getColor(s.mean_kwh, 'consumption');
+
+        grid.innerHTML = `
+            <div class="detail-card">
+                <div class="detail-card-label">Mean Consumption</div>
+                <div class="detail-card-value highlight">${s.mean_kwh.toLocaleString()} kWh</div>
+                <div class="consumption-bar"><div class="consumption-bar-fill" style="width:${barWidth}%;background:${barColor}"></div></div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-card-label">Total Homes</div>
+                <div class="detail-card-value">${totalHomes.toLocaleString()}</div>
+                <div class="detail-card-sub">${sectorPcs.length} postcodes</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-card-label">Est. Annual Bill</div>
+                <div class="detail-card-value">&pound;${annualCost.toLocaleString()}</div>
+                <div class="detail-card-sub">&pound;${Math.round(annualCost/12)}/month</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-card-label">Solar Saving Potential</div>
+                <div class="detail-card-value" style="color:#22c55e">&pound;${solarSaving.toLocaleString()}/yr</div>
+                <div class="detail-card-sub">~60% offset</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-card-label">Owner-Occupied (est.)</div>
+                <div class="detail-card-value">${ownership}%</div>
+                <div class="detail-card-sub">${primaryWard}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-card-label">Consumption Range</div>
+                <div class="detail-card-value">${minKwh.toLocaleString()} - ${maxKwh.toLocaleString()}</div>
+                <div class="detail-card-sub">kWh/yr</div>
+            </div>
+        `;
+
+        panel.classList.add('visible');
+    }
+
+    function closeDetail() {
+        document.getElementById('detail-panel').classList.remove('visible');
+        document.querySelectorAll('.sector-row').forEach(row => row.classList.remove('highlighted'));
+    }
+
+    function setupSearch() {
+        const input = document.getElementById('search-input');
+        const results = document.getElementById('search-results');
+
+        input.addEventListener('input', function() {
+            const q = this.value.toUpperCase().trim();
+            if (q.length < 2) {
+                results.innerHTML = '';
+                return;
+            }
+
+            const matches = postcodes.filter(p =>
+                p.postcode.includes(q) || p.ward.toUpperCase().includes(q)
+            ).slice(0, 10);
+
+            results.innerHTML = matches.map(p => `
+                <div class="search-result" onclick="focusPostcode('${p.postcode}')">
+                    <strong>${p.postcode}</strong> - ${p.ward} (${p.mean_kwh.toLocaleString()} kWh)
+                </div>
+            `).join('');
+        });
+    }
+
+    function focusPostcode(postcode) {
+        const pc = postcodes.find(p => p.postcode === postcode);
+        if (!pc) return;
+
+        map.setView([pc.lat, pc.lng], 17);
+        document.getElementById('search-results').innerHTML = '';
+        document.getElementById('search-input').value = postcode;
+
+        // If in sector mode, switch to postcode mode
+        if (currentMode === 'sector') {
+            setViewMode('postcode');
+        }
+    }
+
+    // Initialize
+    async function init() {
+        initMap();
+
+        // Load data
+        try {
+            const response = await fetch('solihull_compact.json');
+            DATA = await response.json();
+        } catch(e) {
+            console.error('Failed to load data:', e);
+            alert('Failed to load postcode data. Make sure solihull_compact.json is in the same directory.');
+            return;
+        }
+
+        parseData(DATA);
+        updateLegend();
+        buildSectorList();
+        drawPostcodes();
+        drawSectors();
+        setupSearch();
+    }
+
+    init();
+    </script>
+</body>
+</html>
